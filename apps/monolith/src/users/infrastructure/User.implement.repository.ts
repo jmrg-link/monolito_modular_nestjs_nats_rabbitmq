@@ -1,17 +1,16 @@
 /**
- * @file Implementación MongoDB del repositorio de usuarios
+ * @fileoverview Implementación MongoDB del repositorio de usuarios
  * @module Users/Infrastructure/Repository
- * @description Implementa operaciones de persistencia de usuarios utilizando MongoDB/Mongoose
+ * @description Implementa el patrón Repository para la persistencia de usuarios utilizando MongoDB y Mongoose.
+ * Esta clase actúa como puente entre la capa de dominio y la base de datos,
+ * proporcionando operaciones CRUD y búsquedas especializadas para la entidad User.
  */
+
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, UpdateQuery } from "mongoose";
-import {
-  User,
-  UserAddress,
-  UserPreferences,
-  UserSecuritySettings,
-} from "../domain/User.entity";
+import { User } from "../domain/User.entity";
+import { IUserEntity } from "../domain/IUser.entity";
 import { UserDocument, Device } from "./User.schema";
 import { BaseMongoRepository } from "@libs/common/src/database/base.repository";
 import {
@@ -26,137 +25,131 @@ import {
 import { IUserRepository } from "./User.repository";
 
 /**
- * Implementación MongoDB del repositorio de usuarios
- * @class MongoUserRepository
+ * @class MongoUserRepository - User.implement.repository.ts
+ * @extends {BaseMongoRepository<User, UserDocument>}
  * @implements {IUserRepository<UserDocument>}
+ * @private readonly logger - Logger para registrar eventos y errores
+ * @description Implementación concreta del repositorio de usuarios para MongoDB.
+ * Extiende BaseMongoRepository para heredar operaciones comunes y
+ * implementa IUserRepository para cumplir con el contrato de la interfaz.
+ * Maneja la conversión entre documentos MongoDB y entidades de dominio.
  */
 @Injectable()
 export class MongoUserRepository
   extends BaseMongoRepository<User, UserDocument>
-  implements IUserRepository<UserDocument>
-{
+  implements IUserRepository<UserDocument>{
   private readonly logger = new Logger(MongoUserRepository.name);
 
   /**
    * @constructor
-   * @param {Model<UserDocument>} userModel - Modelo Mongoose inyectado
+   * @inject {InjectModel(UserDocument.name)}
+   * @param {Model<UserDocument>} userModel - Modelo Mongoose inyectado para operaciones de base de datos
+   * @description Inyecta el modelo Mongoose para la entidad User.
    */
   constructor(
     @InjectModel(UserDocument.name)
     private readonly userModel: Model<UserDocument>,
   ) {
-    super(userModel, "Usuario");
+    super(userModel, "users");
     this.logger.log("Repositorio de usuarios MongoDB inicializado");
   }
 
   /**
-   * Mapea documento MongoDB a entidad de dominio
-   * @param {UserDocument} document - Documento de usuario
-   * @returns {User} Entidad de dominio mapeada
+   * Transforma un documento MongoDB en una entidad de dominio User
    * @protected
+   * @param {UserDocument} document - Documento de usuario recuperado de MongoDB
+   * @returns {User} Entidad de dominio User con estructura compatible con IUserEntity
    */
   protected mapToDomain(document: UserDocument): User {
-    const {
-      _id,
-      email,
-      username,
-      name,
-      roles,
-      isActive,
-      permissions,
-      customPermissions,
-      firstName,
-      lastName,
-      emailVerified,
-      phoneNumber,
-      avatarUrl,
-      lastLoginAt,
-      address,
-      preferences,
-      passwordChangedAt,
-      birthDate,
-      deletedAt,
-      devices,
-      securitySettings,
-    } = document;
-
-    let userAddress: UserAddress | undefined;
-    if (address) {
-      userAddress = new UserAddress(
-        address.street,
-        address.city,
-        address.state,
-        address.postalCode,
-        address.country,
-      );
-    }
-
-    const userPreferences = new UserPreferences(
-      preferences?.language || "es",
-      preferences?.currency || "EUR",
-      preferences?.timezone || "Europe/Madrid",
-      {
-        email: preferences?.notifications?.email ?? true,
-        sms: preferences?.notifications?.sms ?? false,
-        marketing: preferences?.notifications?.marketing ?? true,
+    const userEntity: IUserEntity = {
+      id: (document._id as unknown as { toString(): string }).toString(),
+      email: document.email,
+      username: document.username || document.email.split("@")[0],
+      name: document.name,
+      roles: document.roles,
+      isActive: document.isActive,
+      permissions: document.permissions || [],
+      customPermissions: document.customPermissions || [],
+      firstName: document.firstName,
+      lastName: document.lastName,
+      emailVerified: document.emailVerified || false,
+      phoneNumber: document.phoneNumber,
+      address: document.address ? {
+        street: document.address.street,
+        city: document.address.city,
+        state: document.address.state,
+        postalCode: document.address.postalCode,
+        country: document.address.country,
+      } : undefined,
+      avatarUrl: document.avatarUrl,
+      lastLoginAt: document.lastLoginAt,
+      preferences: {
+        language: document.preferences?.language || "es",
+        currency: document.preferences?.currency || "EUR",
+        timezone: document.preferences?.timezone || "Europe/Madrid",
+        notifications: {
+          email: document.preferences?.notifications?.email ?? true,
+          sms: document.preferences?.notifications?.sms ?? false,
+          marketing: document.preferences?.notifications?.marketing ?? true,
+        },
       },
-    );
-
-    const userSecuritySettings = new UserSecuritySettings(
-      securitySettings?.mfaEnabled ?? false,
-      securitySettings?.loginNotifications ?? true,
-      securitySettings?.passwordChangeRequired ?? false,
-      securitySettings?.passwordExpiresAt || null,
-      securitySettings?.securityQuestions || [],
-    );
-
-    const userDevices =
-      devices?.map((device) => ({
+      securitySettings: {
+        mfaEnabled: document.securitySettings?.mfaEnabled ?? false,
+        loginNotifications: document.securitySettings?.loginNotifications ?? true,
+        passwordChangeRequired: document.securitySettings?.passwordChangeRequired ?? false,
+        passwordExpiresAt: document.securitySettings?.passwordExpiresAt || null,
+        securityQuestions: document.securitySettings?.securityQuestions || [],
+      },
+      passwordChangedAt: document.passwordChangedAt,
+      birthDate: document.birthDate,
+      deletedAt: document.deletedAt,
+      devices: document.devices?.map((device) => ({
         deviceId: device.deviceId,
         platform: device.platform,
         lastLoginAt: device.lastLoginAt,
         isTrusted: device.isTrusted || false,
-      })) || [];
+      })) || [],
+    };
 
     return new User(
-      (_id as unknown as { toString(): string }).toString(),
-      email,
-      username || email.split("@")[0],
-      name,
-      roles,
-      isActive,
-      permissions || [],
-      customPermissions || [],
-      firstName,
-      lastName,
-      emailVerified || false,
-      phoneNumber,
-      userAddress,
-      avatarUrl,
-      lastLoginAt,
-      userPreferences,
-      userSecuritySettings,
-      passwordChangedAt,
-      birthDate,
-      new Date(), // createdAt: generado por MongoDB (timestamps:true)
-      new Date(), // updatedAt: generado por MongoDB (timestamps:true)
-      deletedAt,
-      userDevices,
+      userEntity.id,
+      userEntity.email,
+      userEntity.username,
+      userEntity.name,
+      userEntity.roles,
+      userEntity.isActive,
+      userEntity.permissions,
+      userEntity.customPermissions,
+      userEntity.firstName,
+      userEntity.lastName,
+      userEntity.emailVerified,
+      userEntity.phoneNumber,
+      userEntity.address,
+      userEntity.avatarUrl,
+      userEntity.lastLoginAt,
+      userEntity.preferences,
+      userEntity.securitySettings,
+      userEntity.passwordChangedAt,
+      userEntity.birthDate,
+      userEntity.createdAt,
+      userEntity.updatedAt,
+      userEntity.deletedAt,
+      userEntity.devices,
     );
   }
 
   /**
-   * Encuentra usuario por email
+   * @public
    * @param {string} email - Email a buscar
-   * @param {boolean} [includePassword=true] - Si incluir campos protegidos
-   * @returns {Promise<UserDocument | null>} Documento de usuario o null
+   * @param {boolean} [includePassword=true] - Incluir campos sensibles como passwordHash
+   * @returns {Promise<UserDocument | null>} Documento de usuario o null si no existe
+   * @description Busca un usuario por su dirección de correo electrónico y opcionalmente incluye campos sensibles.
    */
   async findByEmail(
     email: string,
     includePassword = true,
   ): Promise<UserDocument | null> {
     this.logger.debug(`Buscando usuario con email: ${email}`);
-
     const query = this.userModel.findOne({
       email: email.toLowerCase().trim(),
       deletedAt: { $exists: false },
@@ -167,7 +160,6 @@ export class MongoUserRepository
     }
 
     const result = await query.exec();
-
     this.logger.debug(
       `Resultado de búsqueda por email:`,
       result ? "Usuario encontrado" : "Usuario no encontrado",
@@ -177,9 +169,10 @@ export class MongoUserRepository
   }
 
   /**
-   * Obtiene usuarios activos con paginación
-   * @param {PaginationOptions} options - Opciones de paginación
-   * @returns {Promise<PaginatedResult<User>>} Resultado paginado
+   * @public
+   * @param {PaginationOptions} options - Opciones de paginación (página, límite, orden)
+   * @returns {Promise<PaginatedResult<User>>} Resultado paginado con entidades de dominio
+   * @description Obtiene una lista paginada de usuarios activos y no eliminados que cumplen con los criterios de búsqueda que son pasados como argumento.
    */
   async findActiveUsersWithPagination(
     options: PaginationOptions,
@@ -187,23 +180,26 @@ export class MongoUserRepository
     this.logger.debug(
       `Buscando usuarios activos con paginación: ${JSON.stringify(options)}`,
     );
+
     return this.findWithPagination(options, {
       isActive: true,
       deletedAt: { $exists: false },
-    } as any);
+    } as FilterQuery<UserDocument>);
   }
 
   /**
-   * Actualiza contraseña de usuario
+   * @public
    * @param {string} id - ID del usuario
    * @param {string} passwordHash - Hash de la nueva contraseña
-   * @returns {Promise<UserDocument | null>} Usuario actualizado o null
+   * @returns {Promise<UserDocument | null>} Usuario actualizado o null si no existe
+   * @description Actualiza la contraseña de un usuario y restablece el token de restablecimiento.
    */
   async updatePassword(
     id: string,
     passwordHash: string,
   ): Promise<UserDocument | null> {
     this.logger.debug(`Actualizando contraseña para usuario ${id}`);
+
     return this.userModel
       .findByIdAndUpdate(
         id,
@@ -218,10 +214,11 @@ export class MongoUserRepository
   }
 
   /**
-   * Actualiza estado de activación
+   * @public
    * @param {string} id - ID del usuario
-   * @param {boolean} isActive - Nuevo estado
-   * @returns {Promise<UserDocument | null>} Usuario actualizado o null
+   * @param {boolean} isActive - Nuevo estado de activación
+   * @returns {Promise<UserDocument | null>} Usuario actualizado o null si no existe
+   * @description Actualiza el estado de activación de un usuario pasando su ID y el nuevo estado boolean como argumentos.
    */
   async updateActiveStatus(
     id: string,
@@ -230,16 +227,20 @@ export class MongoUserRepository
     this.logger.debug(
       `Actualizando estado activo para usuario ${id}: ${isActive}`,
     );
+
     return this.userModel
       .findByIdAndUpdate(id, { isActive }, { new: true })
       .exec();
   }
 
   /**
-   * Busca usuarios por término
+   * @public
    * @param {string} term - Término de búsqueda
    * @param {number} [limit] - Límite de resultados
-   * @returns {Promise<UserDocument[]>} Documentos encontrados
+   * @returns {Promise<UserDocument[]>} Lista de documentos que coinciden con la búsqueda
+   * @description Busca usuarios que coincidan con un término en varios campos (email, nombre, etc.) y opcionalmente limita el número de resultados.
+   * Si el término tiene más de 3 caracteres, se utiliza una búsqueda de texto completo.
+   * Si no, se utiliza una búsqueda regex en los campos especificados.
    */
   async searchByTerm(term: string, limit?: number): Promise<UserDocument[]> {
     this.logger.debug(`Buscando usuarios con término: ${term}`);
@@ -250,7 +251,6 @@ export class MongoUserRepository
           { score: { $meta: "textScore" } },
         )
         .sort({ score: { $meta: "textScore" } });
-
       if (limit) {
         query.limit(limit);
       }
@@ -272,7 +272,6 @@ export class MongoUserRepository
         },
       ],
     });
-
     if (limit) {
       query.limit(limit);
     }
@@ -281,10 +280,13 @@ export class MongoUserRepository
   }
 
   /**
-   * Encuentra usuarios por rol
+   * @public
    * @param {string} role - Rol a buscar
    * @param {PaginationOptions} [options] - Opciones de paginación
-   * @returns {Promise<UserDocument[] | PaginatedResult<User>>} Usuarios encontrados
+   * @returns {Promise<UserDocument[] | PaginatedResult<User>>} Lista de usuarios con el rol o resultado paginado
+   * @description Busca usuarios que tengan un rol específico y opcionalmente aplica paginación.
+   * Si se proporcionan opciones de paginación, se devuelve un resultado paginado.
+   * Si no, se devuelve una lista de documentos de usuario.
    */
   async findByRole(
     role: string,
@@ -295,7 +297,6 @@ export class MongoUserRepository
       roles: role,
       deletedAt: { $exists: false },
     };
-
     if (options) {
       return this.findWithPagination(options, query as any);
     }
@@ -304,11 +305,12 @@ export class MongoUserRepository
   }
 
   /**
-   * Actualiza timestamp de último login
+   * @public
    * @param {string} id - ID del usuario
    * @param {Date} timestamp - Fecha y hora del login
-   * @param {Partial<Device>} [deviceInfo] - Información del dispositivo
-   * @returns {Promise<UserDocument | null>} Usuario actualizado
+   * @param {Partial<Device>} [deviceInfo] - Información del dispositivo desde el que se inició sesión
+   * @returns {Promise<UserDocument | null>} Usuario actualizado o null si no existe
+   * @description Actualiza el timestamp del último inicio de sesión y opcionalmente la información del dispositivo del usuario.
    * @throws {NotFoundException} Si el usuario no existe
    */
   async updateLastLoginTimestamp(
@@ -339,11 +341,9 @@ export class MongoUserRepository
       if (!user) {
         throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
       }
-
       const existingDeviceIndex = user.devices.findIndex(
         (d) => d.deviceId === device.deviceId,
       );
-
       if (existingDeviceIndex >= 0) {
         updateQuery[`devices.${existingDeviceIndex}`] = device;
       } else {
@@ -357,11 +357,12 @@ export class MongoUserRepository
   }
 
   /**
-   * Registra intento fallido de login
+   * @public
    * @param {string} email - Email del usuario
-   * @param {number} [maxAttempts=10] - Intentos máximos permitidos
+   * @param {number} [maxAttempts=10] - Número máximo de intentos permitidos
    * @param {number} [lockDuration=30] - Duración del bloqueo en minutos
-   * @returns {Promise<UserDocument | null>} Usuario actualizado
+   * @returns {Promise<UserDocument | null>} Usuario actualizado con información de intentos fallidos
+   * @description Registra un intento fallido de inicio de sesión y bloquea la cuenta si se exceden los intentos máximos 10 intentos por cada 30 minutos.
    */
   async registerFailedLoginAttempt(
     email: string,
@@ -375,7 +376,6 @@ export class MongoUserRepository
 
     const failedAttempts = (user.failedLoginAttempts || 0) + 1;
     const updateData: any = { failedLoginAttempts: failedAttempts };
-
     if (failedAttempts >= maxAttempts) {
       const lockUntil = new Date();
       lockUntil.setMinutes(lockUntil.getMinutes() + lockDuration);
@@ -391,11 +391,12 @@ export class MongoUserRepository
   }
 
   /**
-   * Establece token para reset de contraseña
+   * @public
    * @param {string} email - Email del usuario
-   * @param {string} token - Token generado
+   * @param {string} token - Token generado para el restablecimiento
    * @param {number} [expiresIn=180] - Tiempo de expiración en minutos
-   * @returns {Promise<UserDocument | null>} Usuario actualizado
+   * @returns {Promise<UserDocument | null>} Usuario actualizado con token de reset
+   * @description Establece un token temporal para el restablecimiento de contraseña y lo asocia al usuario especificado por su email.
    */
   async setPasswordResetToken(
     email: string,
@@ -420,9 +421,12 @@ export class MongoUserRepository
   }
 
   /**
-   * Busca usuario por token de reset
-   * @param {string} token - Token a buscar
-   * @returns {Promise<UserDocument | null>} Usuario o null
+   * @public
+   * @param {string} token - Token de restablecimiento a buscar
+   * @returns {Promise<UserDocument | null>} Usuario encontrado o null si el token no es válido o expiró
+   * @description Busca un usuario utilizando un token de restablecimiento de contraseña y verifica su validez y expiración.
+   * Si el token es válido y no ha expirado, se devuelve el usuario correspondiente.
+   * Si no, se devuelve null.
    */
   async findByResetToken(token: string): Promise<UserDocument | null> {
     this.logger.debug(`Buscando usuario por token de reset`);
@@ -438,11 +442,13 @@ export class MongoUserRepository
   }
 
   /**
-   * Establece token para verificación de email
+   * @public
    * @param {string} userId - ID del usuario
-   * @param {string} token - Token generado
+   * @param {string} token - Token generado para la verificación
    * @param {number} [expiresIn=24] - Tiempo de expiración en horas
-   * @returns {Promise<UserDocument | null>} Usuario actualizado
+   * @returns {Promise<UserDocument | null>} Usuario actualizado con token de verificación
+   * @description Establece un token temporal para la verificación de email y lo asocia al usuario especificado por su ID.
+   * El token tiene un tiempo de expiración configurable en horas.
    */
   async setEmailVerificationToken(
     userId: string,
@@ -467,9 +473,12 @@ export class MongoUserRepository
   }
 
   /**
-   * Verifica email con token
+   * @public
    * @param {string} token - Token de verificación
-   * @returns {Promise<UserDocument | null>} Usuario verificado o null
+   * @returns {Promise<UserDocument | null>} Usuario verificado o null si el token no es válido
+   * @description Verifica el email de un usuario utilizando un token de verificación y lo actualiza en la base de datos.
+   * Si el token es válido y no ha expirado, se actualiza el estado de verificación del email.
+   * Si no, se devuelve null.
    */
   async verifyEmail(token: string): Promise<UserDocument | null> {
     this.logger.debug(`Verificando email con token`);
@@ -494,12 +503,15 @@ export class MongoUserRepository
   }
 
   /**
-   * Gestiona permisos de usuario
+   * @public
    * @param {string} userId - ID del usuario
    * @param {Permission[]} permissions - Permisos a gestionar
-   * @param {"add" | "remove" | "set"} [action="set"] - Tipo de operación
-   * @param {Object} [options] - Opciones adicionales
-   * @returns {Promise<UserDocument | null>} Usuario actualizado
+   * @param {"add" | "remove" | "set"} [action="set"] - Acción a realizar (agregar, eliminar o establecer)
+   * @param {Object} [options] - Opciones adicionales para la operación
+   * @returns {Promise<UserDocument | null>} Usuario actualizado con nuevos permisos
+   * @description Establece, añade o elimina permisos para un usuario específico.
+   * Permite agregar permisos a un usuario, eliminarlos o establecer un nuevo conjunto de permisos.
+   * También permite agregar entradas al registro de auditoría y personalizar permisos.
    */
   async setPermissions(
     userId: string,
@@ -525,7 +537,6 @@ export class MongoUserRepository
     }
 
     const updateQuery: Record<string, unknown> = {};
-
     switch (action) {
       case "add":
         updateQuery.$addToSet = { permissions: { $each: validPermissions } };
@@ -583,11 +594,17 @@ export class MongoUserRepository
   }
 
   /**
-   * Actualiza roles de usuario
+   * @public
    * @param {string} userId - ID del usuario
-   * @param {Role[]} roles - Nuevos roles
-   * @param {Object} [options] - Opciones adicionales
-   * @returns {Promise<UserDocument | null>} Usuario actualizado
+   * @param {Role[]} roles - Nuevos roles a asignar
+   * @param {Object} [options] - Opciones para el proceso de actualización
+   * @param {boolean} [options.managePermissions=true] - Si se deben gestionar los permisos asociados a los roles
+   * @param {string} [options.performedBy] - ID del administrador que realiza la acción
+   * @param {string} [options.reason] - Motivo de la actualización
+   * @param {boolean} [options.preserveCustomPermissions=true] - Si se deben conservar los permisos personalizados
+   * @returns {Promise<UserDocument | null>} Usuario actualizado con nuevos roles y permisos
+   * @description Actualiza los roles de un usuario y opcionalmente ajusta los permisos asociados a esos roles.
+   * Permite agregar entradas al registro de auditoría y personalizar permisos.
    */
   async updateRoles(
     userId: string,
@@ -668,12 +685,14 @@ export class MongoUserRepository
   }
 
   /**
-   * Elimina lógicamente un usuario
-   * @param {string} userId - ID del usuario
-   * @param {string} [adminId] - ID del administrador
-   * @param {string} [reason] - Motivo de eliminación
-   * @param {boolean} [anonymizeData=true] - Si anonimizar datos
-   * @returns {Promise<UserDocument | null>} Usuario eliminado
+   * @public
+   * @param {string} userId - ID del usuario a eliminar
+   * @param {string} [adminId] - ID del administrador que realiza la eliminación
+   * @param {string} [reason] - Motivo de la eliminación
+   * @param {boolean} [anonymizeData=true] - Si se deben anonimizar los datos personales
+   * @returns {Promise<UserDocument | null>} Usuario eliminado lógicamente
+   * @description Realiza una eliminación lógica de un usuario (soft delete) el usuario se marca como inactivo y se registra la fecha de eliminación.
+   * También se pueden eliminar datos sensibles y registrar la acción en el registro de auditoría.
    */
   async softDelete(
     userId: string,
@@ -727,11 +746,14 @@ export class MongoUserRepository
   }
 
   /**
-   * Restaura usuario eliminado lógicamente
-   * @param {string} userId - ID del usuario
-   * @param {string} [adminId] - ID del administrador
-   * @param {string} [reason] - Motivo de restauración
-   * @returns {Promise<UserDocument | null>} Usuario restaurado
+   * @public
+   * @param {string} userId - ID del usuario a restaurar
+   * @param {string} [adminId] - ID del administrador que realiza la restauración
+   * @param {string} [reason] - Motivo de la restauración
+   * @returns {Promise<UserDocument | null>} Usuario restaurado o null si no existe
+   * @description Restaura un usuario que fue eliminado lógicamente (soft delete) y elimina la fecha de eliminación.
+   * También se pueden registrar la acción en el registro de auditoría.
+   * Si el usuario fue eliminado y sus datos fueron anonimizados, se devuelve null.
    */
   async restoreUser(
     userId: string,
@@ -778,9 +800,11 @@ export class MongoUserRepository
   }
 
   /**
-   * Busca usuarios con un permiso específico
+   * @public
    * @param {Permission} permission - Permiso a buscar
-   * @returns {Promise<UserDocument[]>} Lista de usuarios con el permiso
+   * @returns {Promise<UserDocument[]>} Lista de usuarios que tienen el permiso
+   * @description Busca usuarios que tengan un permiso específico y que estén activos.
+   * También se excluyen los usuarios eliminados.
    */
   async findByPermission(permission: Permission): Promise<UserDocument[]> {
     this.logger.debug(`Buscando usuarios con permiso: ${permission}`);
@@ -795,8 +819,11 @@ export class MongoUserRepository
   }
 
   /**
-   * Obtiene modelo Mongoose subyacente
-   * @returns {Model<UserDocument>} Modelo Mongoose
+   * @public
+   * @returns {Model<UserDocument>} Modelo Mongoose de User
+   * @description Obtiene el modelo Mongoose subyacente para operaciones directas en la base de datos.
+   * Esto puede ser útil para operaciones avanzadas o personalizadas que no están cubiertas por el repositorio.
+   * **IMPORTANTE** Utilizar con precaución, ya que se omiten las validaciones y transformaciones del repositorio y la capa de dominio.
    */
   getUserModel(): Model<UserDocument> {
     return this.userModel;
