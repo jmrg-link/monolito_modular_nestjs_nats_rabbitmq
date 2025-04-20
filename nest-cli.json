@@ -1,0 +1,47 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps",
+  "monorepo": true,
+  "compilerOptions": {
+    "webpack": false,
+    "tsConfigPath": "tsconfig.json",
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "dtoFileNameSuffix": [".dto.ts", ".entity.ts"],
+          "classValidatorShim": true
+        }
+      }
+    ]
+  },
+  "projects": {
+    "monolith": {
+      "type": "application",
+      "root": "apps/monolith",
+      "entryFile": "main",
+      "sourceRoot": "apps/monolith/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/monolith/tsconfig.json"
+      }
+    },
+    "api-gateway": {
+      "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-gateway/tsconfig.json"
+      }
+    },
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.json"
+      }
+    }
+  }
+}

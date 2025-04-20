@@ -1,0 +1,1077 @@
+{
+  "info": {
+    "_postman_id": "36837be0-d0f8-4e4d-8d06-a3c38e334019",
+    "name": "NestJS DDD CRUD API",
+    "description": "Colección de endpoints CRUD para users, orders y products en el monolito y health en el API Gateway.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "20612786"
+  },
+  "item": [
+    {
+      "name": "API Gateway - Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Listar todos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["users"]
+        }
+      },
+      "response": [
+        {
+          "name": "Users - Listar todos",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["users"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "279"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"117-WBOARl5fNzmcDqyCd5uBENTglKs\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:15:50 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "[\n    {\n        \"_id\": \"67fe78207ea86cc4758c973c\",\n        \"email\": \"test@example.com\",\n        \"name\": \"Test User\",\n        \"passwordHash\": \"$2b$10$gbcP5gFiEEynmpOufRsnYOvOokcjpY7QzbQn6rhAf206Aq223hFKC\",\n        \"roles\": [\n            \"user\"\n        ],\n        \"isActive\": true,\n        \"createdAt\": \"2025-04-15T15:15:44.789Z\",\n        \"updatedAt\": \"2025-04-15T15:15:44.789Z\",\n        \"__v\": 0\n    }\n]"
+        }
+      ]
+    },
+    {
+      "name": "Users - Crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@example.com\",\n  \"name\": \"Test User\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["users"]
+        }
+      },
+      "response": [
+        {
+          "name": "Users - Crear",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"name\": \"Test User\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["users"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "277"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"115-L24rvhqi1HuqqCk9nSex8gJC63M\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:15:44 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"email\": \"test@example.com\",\n    \"name\": \"Test User\",\n    \"passwordHash\": \"$2b$10$gbcP5gFiEEynmpOufRsnYOvOokcjpY7QzbQn6rhAf206Aq223hFKC\",\n    \"roles\": [\n        \"user\"\n    ],\n    \"isActive\": true,\n    \"_id\": \"67fe78207ea86cc4758c973c\",\n    \"createdAt\": \"2025-04-15T15:15:44.789Z\",\n    \"updatedAt\": \"2025-04-15T15:15:44.789Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Users - Obtener por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/users/67fe78207ea86cc4758c973c",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["users", "67fe78207ea86cc4758c973c"]
+        }
+      },
+      "response": [
+        {
+          "name": "Users - Obtener por ID",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/users/67fe78207ea86cc4758c973c",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["users", "67fe78207ea86cc4758c973c"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "277"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"115-iJ4V53aYPjvBL2ZA9hFipqYXeR8\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:16:27 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe78207ea86cc4758c973c\",\n    \"email\": \"test@example.com\",\n    \"name\": \"Test User\",\n    \"passwordHash\": \"$2b$10$gbcP5gFiEEynmpOufRsnYOvOokcjpY7QzbQn6rhAf206Aq223hFKC\",\n    \"roles\": [\n        \"user\"\n    ],\n    \"isActive\": true,\n    \"createdAt\": \"2025-04-15T15:15:44.789Z\",\n    \"updatedAt\": \"2025-04-15T15:15:44.789Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Users - Actualizar",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nuevo Nombre\",\n  \"isActive\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/users/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["users", ":id"],
+          "variable": [
+            {
+              "key": "id"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Users - Actualizar",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nuevo Nombre\",\n  \"isActive\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/users/67fe78207ea86cc4758c973c",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["users", "67fe78207ea86cc4758c973c"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "281"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"119-BciZ2ljZyH0SIWvTrriWPG6+KEk\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:16:37 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe78207ea86cc4758c973c\",\n    \"email\": \"test@example.com\",\n    \"name\": \"Nuevo Nombre\",\n    \"passwordHash\": \"$2b$10$gbcP5gFiEEynmpOufRsnYOvOokcjpY7QzbQn6rhAf206Aq223hFKC\",\n    \"roles\": [\n        \"user\"\n    ],\n    \"isActive\": false,\n    \"createdAt\": \"2025-04-15T15:15:44.789Z\",\n    \"updatedAt\": \"2025-04-15T15:16:37.339Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Users - Eliminar",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/users/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["users", ":id"],
+          "variable": [
+            {
+              "key": "id"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Users - Eliminar",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/users/67fe78207ea86cc4758c973c",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["users", "67fe78207ea86cc4758c973c"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "281"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"119-BciZ2ljZyH0SIWvTrriWPG6+KEk\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:17:15 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe78207ea86cc4758c973c\",\n    \"email\": \"test@example.com\",\n    \"name\": \"Nuevo Nombre\",\n    \"passwordHash\": \"$2b$10$gbcP5gFiEEynmpOufRsnYOvOokcjpY7QzbQn6rhAf206Aq223hFKC\",\n    \"roles\": [\n        \"user\"\n    ],\n    \"isActive\": false,\n    \"createdAt\": \"2025-04-15T15:15:44.789Z\",\n    \"updatedAt\": \"2025-04-15T15:16:37.339Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Orders - Listar todos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["orders"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders - Crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"67fe78937ea86cc4758c9743\",\n  \"total\": 100.5\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["orders"]
+        }
+      },
+      "response": [
+        {
+          "name": "Orders - Crear",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"67fe78937ea86cc4758c9743\",\n  \"total\": 100.5\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["orders"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "203"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"cb-C708GfS2BJEQ0caukL9GjKrM3mA\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:18:02 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"userId\": \"67fe78937ea86cc4758c9743\",\n    \"total\": 100.5,\n    \"products\": [],\n    \"status\": \"pending\",\n    \"_id\": \"67fe78aa7ea86cc4758c9745\",\n    \"createdAt\": \"2025-04-15T15:18:02.365Z\",\n    \"updatedAt\": \"2025-04-15T15:18:02.365Z\",\n    \"__v\": 0\n}"
+        },
+        {
+          "name": "Orders - Crear",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"67fe78937ea86cc4758c9743\",\n  \"total\": 100.5\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["orders"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "203"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"cb-C708GfS2BJEQ0caukL9GjKrM3mA\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:18:02 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"userId\": \"67fe78937ea86cc4758c9743\",\n    \"total\": 100.5,\n    \"products\": [],\n    \"status\": \"pending\",\n    \"_id\": \"67fe78aa7ea86cc4758c9745\",\n    \"createdAt\": \"2025-04-15T15:18:02.365Z\",\n    \"updatedAt\": \"2025-04-15T15:18:02.365Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Orders - Obtener por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/orders/67fe78aa7ea86cc4758c9745",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["orders", "67fe78aa7ea86cc4758c9745"]
+        }
+      },
+      "response": [
+        {
+          "name": "Orders - Obtener por ID",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/orders/67fe78aa7ea86cc4758c9745",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["orders", "67fe78aa7ea86cc4758c9745"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "203"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"cb-sdzpKBjMcB4sryuRvCedes7GuD0\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:18:23 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe78aa7ea86cc4758c9745\",\n    \"userId\": \"67fe78937ea86cc4758c9743\",\n    \"total\": 100.5,\n    \"products\": [],\n    \"status\": \"pending\",\n    \"createdAt\": \"2025-04-15T15:18:02.365Z\",\n    \"updatedAt\": \"2025-04-15T15:18:02.365Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Orders - Actualizar",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"paid\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/orders/67fe78aa7ea86cc4758c9745",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["orders", "67fe78aa7ea86cc4758c9745"]
+        }
+      },
+      "response": [
+        {
+          "name": "Orders - Actualizar",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"paid\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/orders/67fe78aa7ea86cc4758c9745",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["orders", "67fe78aa7ea86cc4758c9745"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "200"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"c8-so3TASJl5aplryJuGsjFmDQhPDg\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:18:40 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe78aa7ea86cc4758c9745\",\n    \"userId\": \"67fe78937ea86cc4758c9743\",\n    \"total\": 100.5,\n    \"products\": [],\n    \"status\": \"paid\",\n    \"createdAt\": \"2025-04-15T15:18:02.365Z\",\n    \"updatedAt\": \"2025-04-15T15:18:40.638Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Orders - Eliminar",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/orders/67fe78aa7ea86cc4758c9745",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["orders", "67fe78aa7ea86cc4758c9745"]
+        }
+      },
+      "response": [
+        {
+          "name": "Orders - Eliminar",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/orders/67fe78aa7ea86cc4758c9745",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["orders", "67fe78aa7ea86cc4758c9745"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "200"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"c8-so3TASJl5aplryJuGsjFmDQhPDg\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:18:58 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe78aa7ea86cc4758c9745\",\n    \"userId\": \"67fe78937ea86cc4758c9743\",\n    \"total\": 100.5,\n    \"products\": [],\n    \"status\": \"paid\",\n    \"createdAt\": \"2025-04-15T15:18:02.365Z\",\n    \"updatedAt\": \"2025-04-15T15:18:40.638Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Products - Listar todos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["products"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Products - Crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Producto Test\",\n  \"price\": 19.99\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["products"]
+        }
+      },
+      "response": [
+        {
+          "name": "Products - Crear",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Producto Test\",\n  \"price\": 19.99\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["products"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "173"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"ad-34b1Mpf6ZQoIBL++8UHQOCUm2rk\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:20:53 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"name\": \"Producto Test\",\n    \"price\": 19.99,\n    \"isActive\": true,\n    \"_id\": \"67fe79557ea86cc4758c974d\",\n    \"createdAt\": \"2025-04-15T15:20:53.778Z\",\n    \"updatedAt\": \"2025-04-15T15:20:53.778Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Products - Obtener por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/products/67fe79557ea86cc4758c974d",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["products", "67fe79557ea86cc4758c974d"]
+        }
+      },
+      "response": [
+        {
+          "name": "Products - Obtener por ID",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/products/67fe79557ea86cc4758c974d",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["products", "67fe79557ea86cc4758c974d"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "173"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"ad-0TLicnHIPjQqNCQMvDz121gkqxY\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:21:08 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe79557ea86cc4758c974d\",\n    \"name\": \"Producto Test\",\n    \"price\": 19.99,\n    \"isActive\": true,\n    \"createdAt\": \"2025-04-15T15:20:53.778Z\",\n    \"updatedAt\": \"2025-04-15T15:20:53.778Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Products - Actualizar",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 25.99\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/products/67fe79557ea86cc4758c974d",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["products", "67fe79557ea86cc4758c974d"]
+        }
+      },
+      "response": [
+        {
+          "name": "Products - Actualizar",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 25.99\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/products/67fe79557ea86cc4758c974d",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["products", "67fe79557ea86cc4758c974d"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "173"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"ad-U4q2ExDT16NOkpMvpFRlAZKysv4\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:21:24 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe79557ea86cc4758c974d\",\n    \"name\": \"Producto Test\",\n    \"price\": 25.99,\n    \"isActive\": true,\n    \"createdAt\": \"2025-04-15T15:20:53.778Z\",\n    \"updatedAt\": \"2025-04-15T15:21:24.307Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "Products - Eliminar",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/products/67fe79557ea86cc4758c974d",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["products", "67fe79557ea86cc4758c974d"]
+        }
+      },
+      "response": [
+        {
+          "name": "Products - Eliminar",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/products/67fe79557ea86cc4758c974d",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["products", "67fe79557ea86cc4758c974d"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "173"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"ad-U4q2ExDT16NOkpMvpFRlAZKysv4\""
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 15 Apr 2025 15:21:44 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"_id\": \"67fe79557ea86cc4758c974d\",\n    \"name\": \"Producto Test\",\n    \"price\": 25.99,\n    \"isActive\": true,\n    \"createdAt\": \"2025-04-15T15:20:53.778Z\",\n    \"updatedAt\": \"2025-04-15T15:21:24.307Z\",\n    \"__v\": 0\n}"
+        }
+      ]
+    }
+  ]
+}
