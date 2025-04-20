@@ -18,14 +18,10 @@ const logger = new Logger("RabbitMQUtil");
  */
 export async function deleteQueue(queueName: string) {
   try {
-    // Establecer conexión
     const connection = await amqplib.connect(rabbitMqConfig.url);
     const channel = await connection.createChannel();
 
-    // Eliminar la cola
     await channel.deleteQueue(queueName);
-
-    // Cerrar conexión
     await channel.close();
     await connection.close();
 
@@ -45,12 +41,10 @@ export async function deleteQueue(queueName: string) {
  */
 export async function setupRabbitMQInfrastructure() {
   try {
-    // Establecer conexión
     const connection = await amqplib.connect(rabbitMqConfig.url);
     const channel = await connection.createChannel();
-
-    // Configurar intercambios primero
-    for (const [key, exchange] of Object.entries(rabbitMqConfig.exchanges)) {
+    for (const [ key, exchange ] of Object.entries(rabbitMqConfig.exchanges))
+    {
       await channel.assertExchange(
         exchange.name,
         exchange.type,
@@ -58,7 +52,6 @@ export async function setupRabbitMQInfrastructure() {
       );
     }
 
-    // Paso 1: Asegurarse de que la cola de letra muerta existe primero
     if (rabbitMqConfig.queues.dlq) {
       try {
         const dlqName = rabbitMqConfig.queues.dlq.name;
@@ -72,13 +65,9 @@ export async function setupRabbitMQInfrastructure() {
       }
     }
 
-    // Paso 2: Configurar el resto de las colas
     for (const [key, queue] of Object.entries(rabbitMqConfig.queues)) {
-      // Saltamos la cola DLQ que ya se configuró
       if (key === "dlq") continue;
-
       try {
-        // Intentamos comprobar si la cola existe
         const checkQueue = await channel
           .checkQueue(queue.name)
           .catch(() => null);
@@ -95,7 +84,6 @@ export async function setupRabbitMQInfrastructure() {
       }
     }
 
-    // Paso 3: Configurar bindings - primero el binding de la cola de letra muerta
     const dlxBindings = rabbitMqConfig.bindings.filter(
       (b) => b.queue === rabbitMqConfig.queues.dlq?.name,
     );
@@ -103,7 +91,6 @@ export async function setupRabbitMQInfrastructure() {
       await channel.bindQueue(binding.queue, binding.exchange, binding.pattern);
     }
 
-    // Paso 4: Configurar el resto de los bindings
     const regularBindings = rabbitMqConfig.bindings.filter(
       (b) => b.queue !== rabbitMqConfig.queues.dlq?.name,
     );
@@ -111,7 +98,6 @@ export async function setupRabbitMQInfrastructure() {
       await channel.bindQueue(binding.queue, binding.exchange, binding.pattern);
     }
 
-    // Cerrar conexión
     await channel.close();
     await connection.close();
 

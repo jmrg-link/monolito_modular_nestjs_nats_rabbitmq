@@ -17,11 +17,8 @@ export class PublicRouteGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const path = request.route.path;
-
-    // Lista de rutas públicas que no requieren autenticación
     const publicRoutes = [
       "/public/users/check-email",
-      // Añadir otras rutas públicas aquí
     ];
 
     return publicRoutes.some((route) => path.includes(route));

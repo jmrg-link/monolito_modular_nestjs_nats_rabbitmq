@@ -16,10 +16,7 @@ export class RabbitMQSetupService implements OnModuleInit {
   async onModuleInit() {
     try {
       this.logger.log("Configurando infraestructura RabbitMQ...");
-
-      // Configurar todas las colas, exchanges y bindings
       const result = await setupRabbitMQInfrastructure();
-
       if (result) {
         this.logger.log("Infraestructura RabbitMQ configurada correctamente.");
       } else {

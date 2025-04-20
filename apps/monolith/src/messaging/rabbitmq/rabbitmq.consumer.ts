@@ -27,9 +27,7 @@ export class RabbitMQConsumer implements OnModuleInit {
       this.logger.log("Iniciando consumidor manual de RabbitMQ...");
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       await this.connect();
-
       if (this.channel) {
         await this.channel.assertQueue(
           rabbitMqConfig.queues.user.name,
@@ -65,13 +63,10 @@ export class RabbitMQConsumer implements OnModuleInit {
           rabbitMqConfig.queues.user.name,
           async (msg: any) => {
             if (!msg) return;
-
             try {
               const content = msg.content.toString();
               const routingKey = msg.fields.routingKey;
-
               const rawData = JSON.parse(content);
-
               const hasNestJSFormat =
                 rawData &&
                 typeof rawData === "object" &&
@@ -80,11 +75,9 @@ export class RabbitMQConsumer implements OnModuleInit {
 
               const data = hasNestJSFormat ? rawData.data : rawData;
               const pattern = hasNestJSFormat ? rawData.pattern : routingKey;
-
               this.logger.log(
                 `Mensaje recibido en ${rabbitMqConfig.queues.user.name}: ${routingKey}, Pattern: ${pattern}`,
               );
-              // Recibimos el evento pero delegamos el procesamiento en varios casos
               if (
                 pattern === "user.registered" ||
                 routingKey === "user.registered"
@@ -180,7 +173,6 @@ export class RabbitMQConsumer implements OnModuleInit {
       this.connection = await amqplib.connect(rabbitMqConfig.url);
       if (this.connection) {
         this.channel = await this.connection.createChannel();
-
         this.connection.on("close", () => {
           this.logger.warn(
             "Conexión RabbitMQ cerrada, intentando reconectar...",

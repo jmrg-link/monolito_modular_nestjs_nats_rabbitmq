@@ -5,9 +5,6 @@ import { envs } from "./envs";
  * Gestiona todas las configuraciones del servicio con validación de variables de entorno.
  */
 export const MonolithConfig = {
-  /**
-   * Configuración del entorno
-   */
   environment: {
     nodeEnv: envs.nodeEnv,
     isDevelopment: envs.isDevelopment,
@@ -15,9 +12,6 @@ export const MonolithConfig = {
     isLocalhost: envs.isLocalhost,
   },
 
-  /**
-   * Configuración del servidor
-   */
   server: {
     port: envs.port,
     host: process.env.HOST || "localhost",
@@ -25,9 +19,6 @@ export const MonolithConfig = {
     swaggerPrefix: process.env.SWAGGER_PREFIX || "docs",
   },
 
-  /**
-   * Configuración de la base de datos
-   */
   database: {
     uri: envs.mongoDbUri,
     dbName: envs.dbName,
@@ -43,9 +34,6 @@ export const MonolithConfig = {
     },
   },
 
-  /**
-   * Configuraciones de seguridad
-   */
   security: {
     cors: {
       origin: envs.corsOrigin || "*",
@@ -60,9 +48,6 @@ export const MonolithConfig = {
     },
   },
 
-  /**
-   * Configuración de autenticación JWT
-   */
   jwt: {
     secret: envs.jwtSecret,
     expiresIn: envs.jwtExpiresIn,
@@ -74,9 +59,6 @@ export const MonolithConfig = {
     expiresInString: process.env.JWT_EXPIRES_IN_STRING || "1h",
   },
 
-  /**
-   * Configuración de servicios de mensajería
-   */
   messaging: {
     nats: {
       url: envs.natsUrl,
@@ -95,17 +77,11 @@ export const MonolithConfig = {
     },
   },
 
-  /**
-   * Configuración de registro de logs
-   */
   logging: {
     level: envs.logLevel || "info",
     pretty: process.env.LOG_PRETTY !== "false",
   },
 
-  /**
-   * Configuración de documentación Swagger
-   */
   swagger: {
     title: process.env.SWAGGER_TITLE || "API Monolito DDD",
     description:
@@ -113,7 +89,6 @@ export const MonolithConfig = {
       "API del Monolito basado en Diseño Dirigido por Dominio (DDD) con arquitectura hexagonal",
     version: process.env.SWAGGER_VERSION || "1.0",
     tag: process.env.SWAGGER_TAG || "api",
-
     contactName: process.env.SWAGGER_CONTACT_NAME || "Equipo de Desarrollo",
     contactEmail: process.env.SWAGGER_CONTACT_EMAIL || "desarrollo@ejemplo.com",
     contactUrl: process.env.SWAGGER_CONTACT_URL || "https://ejemplo.com",

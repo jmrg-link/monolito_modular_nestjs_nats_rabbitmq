@@ -8,7 +8,6 @@ export const rabbitMqConfig = {
     process.env.RABBITMQ_URL ||
     "amqp://rabbit_user:rabbit_password@localhost:5672",
 
-  // Configuración de intercambios
   exchanges: {
     user: {
       name: "user_exchange",
@@ -40,7 +39,6 @@ export const rabbitMqConfig = {
     },
   },
 
-  // Configuración de colas
   queues: {
     main: {
       name: "main_queue",
@@ -110,5 +108,3 @@ export const rabbitMqConfig = {
     },
   ],
 };
-
-// La configuración rmqServiceConfig ha sido eliminada ya que no se usa con conexiones manuales

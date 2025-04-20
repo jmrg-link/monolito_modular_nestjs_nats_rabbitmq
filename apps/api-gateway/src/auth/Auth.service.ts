@@ -44,7 +44,6 @@ export class AuthService {
     @Inject("RABBITMQ_SERVICE") private readonly rabbitClient: ClientProxy,
     private readonly messageRetryBuffer: MessageRetryBuffer,
   ) {
-    // Inicializar conexión a NATS al arrancar el servicio
     this.natsClient.connect().catch((err) => {
       console.error("[AuthService] Error al conectar con NATS:", err);
     });
@@ -77,19 +76,13 @@ export class AuthService {
       console.log(
         `[AuthService] Iniciando login para email: ${loginDto.email}`,
       );
-
-      // Verificar conexión NATS
       const isConnected = await this.testNatsConnection();
       if (!isConnected) {
         console.warn(
           `[AuthService] No hay conexión con NATS, usando fallback HTTP`,
         );
       }
-
-      // Buscar usuario por email
       let userData = null;
-
-      // Intentar primero con NATS si hay conexión
       if (isConnected) {
         try {
           console.log(
@@ -122,8 +115,6 @@ export class AuthService {
           );
         }
       }
-
-      // Si NATS falló, intentar con HTTP directo
       if (!userData) {
         try {
           console.log(
@@ -154,7 +145,6 @@ export class AuthService {
                       resolve(null);
                       return;
                     }
-
                     const result = JSON.parse(data);
                     if (result && result.email === loginDto.email) {
                       console.log(
@@ -173,23 +163,19 @@ export class AuthService {
                 });
               },
             );
-
             req.on("error", (err: Error) => {
               console.error(
                 `[AuthService] Error en solicitud HTTP: ${err.message}`,
               );
               resolve(null);
             });
-
             req.on("timeout", () => {
               req.destroy();
               console.log(`[AuthService] Timeout en solicitud HTTP`);
               resolve(null);
             });
-
             req.end();
           });
-
           userData = await userDataPromise;
         } catch (error) {
           console.error(
@@ -198,12 +184,10 @@ export class AuthService {
         }
       }
 
-      // Si no encontramos al usuario, credenciales inválidas
       if (!userData) {
         throw new UnauthorizedException("Credenciales inválidas");
       }
 
-      // Verificar contraseña
       try {
         if (!userData.passwordHash) {
           console.error(
@@ -227,11 +211,8 @@ export class AuthService {
         throw new UnauthorizedException("Error al verificar credenciales");
       }
 
-      // Actualizar última fecha de login (best-effort)
       try {
-        // Asegurar que siempre tenemos un ID válido
         const userId = userData._id?.toString() || userData.id;
-
         if (!userId) {
           console.warn(
             `[AuthService] No se pudo obtener un ID válido del usuario ${userData.email}`,
@@ -242,7 +223,6 @@ export class AuthService {
             timestamp: new Date().toISOString(),
           };
 
-          // Verificar el patrón correcto para NATS
           const natsPattern = NATS_PATTERNS.USER.LOGGED_IN || "user.loggedIn";
           if (isConnected) {
             console.log(
@@ -251,14 +231,12 @@ export class AuthService {
             this.natsClient.emit(natsPattern, loginEvent);
           }
 
-          // Verificar el patrón correcto para RabbitMQ
           const rmqPattern = RMQ_PATTERNS.USER.LOGGED_IN || "user.loggedIn";
           console.log(
             `[AuthService] Emitiendo evento login en RabbitMQ: ${rmqPattern} - ID: ${userId}`,
           );
           this.rabbitClient.emit(rmqPattern, loginEvent);
 
-          // Implementación manual alternativa para RabbitMQ
           try {
             const amqplib = require("amqplib");
             let connection: any;
@@ -300,7 +278,6 @@ export class AuthService {
                   `[RabbitMQ] Error al publicar evento de login manual: ${err.message}`,
                 );
 
-                // Si falla la publicación directa, usar el buffer de reintentos
                 this.messageRetryBuffer.addMessage(
                   "user_exchange",
                   "user.loggedIn",
@@ -315,7 +292,6 @@ export class AuthService {
               `[AuthService] Error en publicación manual: ${error instanceof Error ? error.message : String(error)}`,
             );
 
-            // Añadir al buffer de reintentos cuando falla completamente
             this.messageRetryBuffer.addMessage(
               "user_exchange",
               "user.loggedIn",
@@ -332,7 +308,6 @@ export class AuthService {
         );
       }
 
-      // Generar respuesta con tokens
       return this.generateAuthResponse(userData);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -354,10 +329,6 @@ export class AuthService {
    */
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     try {
-      console.log(
-        `[AuthService] Iniciando registro para email: ${registerDto.email}`,
-      );
-
       const isConnected = await this.testNatsConnection();
       if (!isConnected) {
         throw new ServiceUnavailableException(
@@ -365,7 +336,6 @@ export class AuthService {
         );
       }
 
-      // Verificar primero si el usuario ya existe
       let existingUser = null;
       try {
         existingUser = await firstValueFrom(
@@ -393,15 +363,9 @@ export class AuthService {
         if (error instanceof BadRequestException) {
           throw error;
         }
-        // Otros errores al buscar el usuario se ignoran para continuar con el registro
       }
-
-      // Verificar directamente en la base de datos a través de REST API interna
       try {
-        // Intento directo a la API REST del monolito (bypass de NATS/RabbitMQ)
         const http = require("http");
-
-        // Definir la interfaz para la respuesta de verificación de email
         interface EmailCheckResult {
           exists: boolean;
           message: string;
@@ -427,7 +391,6 @@ export class AuthService {
                 });
                 res.on("end", () => {
                   try {
-                    // Si el status code no es 200, consideramos que el email no existe para evitar errores
                     if (res.statusCode !== 200) {
                       console.log(
                         `[AuthService] El endpoint check-email respondió con status ${res.statusCode}`,
@@ -452,7 +415,6 @@ export class AuthService {
             );
 
             req.on("error", () => {
-              // Error de conexión - continuamos con el flujo alternativo
               resolve({ exists: false, message: "Error de conexión" });
             });
 
@@ -460,7 +422,6 @@ export class AuthService {
               req.destroy();
               resolve({ exists: false, message: "Timeout de conexión" });
             });
-
             req.end();
           },
         );
@@ -479,17 +440,9 @@ export class AuthService {
         if (error instanceof BadRequestException) {
           throw error;
         }
-        // Si hay otro tipo de error en la verificación directa, continuamos con el flujo normal
       }
 
-      console.log(
-        `[AuthService] Implementando solución para el registro de usuario`,
-      );
-
-      // Crear hash de la contraseña
       const passwordHash = await bcrypt.hash(registerDto.password, 10);
-
-      // Enviar comando para crear el usuario en el servicio principal
       const userData = {
         email: registerDto.email,
         name: registerDto.name,
@@ -498,11 +451,9 @@ export class AuthService {
         isActive: true,
       };
 
-      // Intentar crear el usuario directamente a través de HTTP
       try {
         const http = require("http");
         const directRegisterPromise = new Promise<any>((resolve, reject) => {
-          // Preparar los datos para la solicitud
           const postData = JSON.stringify({
             email: registerDto.email,
             name: registerDto.name,
@@ -523,7 +474,6 @@ export class AuthService {
               timeout: 5000,
             },
             (res: any) => {
-              // Manejar la respuesta
               let data = "";
               res.on("data", (chunk: Buffer) => (data += chunk));
               res.on("end", () => {
@@ -576,18 +526,15 @@ export class AuthService {
             reject(new Error("Timeout al intentar crear usuario"));
           });
 
-          // Enviar los datos
           req.write(postData);
           req.end();
         });
 
-        // Esperar la respuesta
         const createdUser = await directRegisterPromise;
         console.log(
           `[AuthService] Usuario creado exitosamente con ID: ${createdUser.id}`,
         );
 
-        // Generar respuesta con el ID real del usuario
         return this.generateAuthResponse({
           _id: createdUser.id,
           email: createdUser.email,
@@ -599,24 +546,16 @@ export class AuthService {
         if (error instanceof BadRequestException) {
           throw error;
         }
-        console.error(
-          `[AuthService] Error al crear usuario directamente: ${error instanceof Error ? error.message : String(error)}`,
-        );
       }
 
-      // Fallback: usar solución local solo si no encontramos el usuario (para evitar duplicados)
-      console.log(`[AuthService] Usando solución local para el registro`);
-
-      // Verificar directamente antes del fallback si el usuario ya existe
       if (existingUser) {
         throw new BadRequestException(
           `El email ${registerDto.email} ya está registrado`,
         );
       }
 
-      // Creamos un usuario temporal para generar la respuesta
       const tempUser = {
-        _id: Date.now().toString(), // ID temporal
+        _id: Date.now().toString(),
         email: registerDto.email,
         name: registerDto.name,
         passwordHash,
@@ -625,15 +564,8 @@ export class AuthService {
         createdAt: new Date().toISOString(),
       };
 
-      // Publicar evento para asegurar que el usuario se cree en MongoDB
       this.publishUserCreatedEvent(tempUser);
 
-      console.log(
-        `[AuthService] Usuario creado localmente, eventos publicados`,
-      );
-
-      // Como fallback, devolvemos la respuesta basada en los datos locales
-      // El usuario deberá volver a iniciar sesión para obtener tokens válidos
       return this.generateAuthResponse(tempUser);
     } catch (error) {
       if (
@@ -659,7 +591,6 @@ export class AuthService {
     try {
       console.log(`[AuthService] Procesando solicitud de refresh token`);
 
-      // Verificar firma del token
       let decoded: any;
       try {
         decoded = this.jwtService.verify(refreshTokenDto.refreshToken, {
@@ -676,13 +607,8 @@ export class AuthService {
         throw new UnauthorizedException("Token malformado");
       }
 
-      // Verificar conexión NATS
       const isConnected = await this.testNatsConnection();
-
-      // Intentar obtener datos actualizados del usuario
       let user = null;
-
-      // Primero intentar con NATS si está disponible
       if (isConnected) {
         try {
           console.log(
@@ -716,7 +642,6 @@ export class AuthService {
         }
       }
 
-      // Si no se pudo encontrar el usuario, usar los datos del token como fallback
       if (!user) {
         console.log(
           `[AuthService] No se pudo verificar usuario, usando datos del token como fallback`,
@@ -729,7 +654,6 @@ export class AuthService {
         };
       }
 
-      // Generar nuevo access token
       const payload: JwtPayload = {
         sub: user._id?.toString() || user.id,
         email: user.email,
@@ -767,13 +691,8 @@ export class AuthService {
         `[AuthService] Iniciando cambio de contraseña para usuario: ${userId}`,
       );
 
-      // Verificar conexión NATS
       const isConnected = await this.testNatsConnection();
-
-      // Buscar usuario
       let user = null;
-
-      // Intentar primero con NATS
       if (isConnected) {
         try {
           console.log(
@@ -811,7 +730,6 @@ export class AuthService {
         throw new UnauthorizedException("Usuario no encontrado");
       }
 
-      // Verificar contraseña actual
       const isCurrentPasswordValid = await bcrypt.compare(
         changePasswordDto.currentPassword,
         user.passwordHash,
@@ -821,16 +739,11 @@ export class AuthService {
         throw new UnauthorizedException("La contraseña actual es incorrecta");
       }
 
-      // Generar hash de la nueva contraseña
       const newPasswordHash = await bcrypt.hash(
         changePasswordDto.newPassword,
         10,
       );
-
-      // Actualizar contraseña
       let updateSuccess = false;
-
-      // Intentar primero NATS
       if (isConnected) {
         try {
           console.log(
@@ -869,7 +782,6 @@ export class AuthService {
         );
       }
 
-      // Emitir eventos de cambio de contraseña (best-effort)
       try {
         if (isConnected) {
           this.natsClient.emit(NATS_PATTERNS.USER.PASSWORD_CHANGED, {
@@ -908,9 +820,7 @@ export class AuthService {
    * @private
    */
   private generateAuthResponse(user: any): AuthResponse {
-    // Asegurar que tenemos un ID válido
     const userId = user._id?.toString() || user.id;
-
     if (!userId) {
       console.error(
         `[AuthService] Error: Usuario sin ID válido - ${user.email}`,
@@ -958,7 +868,6 @@ export class AuthService {
       createdAt: new Date().toISOString(),
     };
 
-    // Emisión para NATS (sin configuración especial requerida)
     this.natsClient.emit(NATS_PATTERNS.USER.REGISTERED, eventData);
 
     try {
@@ -978,7 +887,6 @@ export class AuthService {
             pattern: "user.registered",
             data: eventData,
           };
-
           channel.publish(
             "user_exchange",
             "user.registered",
@@ -997,8 +905,6 @@ export class AuthService {
           console.error(
             `[RabbitMQ] Error al publicar evento de registro: ${err.message}`,
           );
-
-          // Si falla, añadir al buffer de reintentos
           this.messageRetryBuffer.addMessage(
             "user_exchange",
             "user.registered",

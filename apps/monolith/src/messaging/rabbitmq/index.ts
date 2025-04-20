@@ -1,2 +1,8 @@
 export * from "./RabbitMqPublisher";
-// RabbitMqSubscriber ha sido desactivado en favor de conexiones manuales
+export * from "./rabbitmq.config";
+export * from "./rabbitmq.consumer";
+export * from "./rabbitmq.util";
+export * from "./SetupRabbitMQ";
+
+
+

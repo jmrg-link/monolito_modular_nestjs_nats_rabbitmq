@@ -3,3 +3,4 @@
  * @module Monolith/Config
  */
 export * from "./app.config";
+export * from  "./envs"

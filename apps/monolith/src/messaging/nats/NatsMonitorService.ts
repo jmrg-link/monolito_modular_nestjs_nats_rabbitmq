@@ -18,23 +18,17 @@ export class NatsMonitorService implements OnModuleInit {
    */
   async onModuleInit() {
     try {
-      // Verificamos que los métodos del suscriptor estén correctamente vinculados
       const subscriberKeys = Object.getOwnPropertyNames(
         Object.getPrototypeOf(this.natsSubscriber),
       );
-
-      // Listamos los métodos que deberían ser manejadores
       const handlerMethods = subscriberKeys.filter(
         (key) =>
           key.startsWith("find") ||
           key.startsWith("create") ||
           key.startsWith("update"),
       );
-
       if (handlerMethods.length > 0) {
-        // Esperar un poco más para asegurar que los suscriptores estén completamente inicializados
         await new Promise((resolve) => setTimeout(resolve, 2000));
-
         this.logger.log(
           "Suscriptor NATS verificado y listo para procesar mensajes",
         );
