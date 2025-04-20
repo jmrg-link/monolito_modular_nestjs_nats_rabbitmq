@@ -17,9 +17,7 @@ export class PublicRouteGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const path = request.route.path;
-    const publicRoutes = [
-      "/public/users/check-email",
-    ];
+    const publicRoutes = ["/public/users/check-email"];
 
     return publicRoutes.some((route) => path.includes(route));
   }

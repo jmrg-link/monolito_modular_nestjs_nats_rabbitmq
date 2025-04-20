@@ -53,7 +53,9 @@ export class UserService {
     password: string = "",
     passwordHash: string = "",
   ) {
-    const existingUser = await this.userRepository.findByEmail(user.email);
+    const existingUser = await this.userRepository.findByEmail(
+      user.email as string,
+    );
     if (existingUser) {
       throw new BadRequestException(
         `El email ${user.email} ya está registrado`,
@@ -158,7 +160,9 @@ export class UserService {
     }>,
   ) {
     if (update.email) {
-      const existingUser = await this.userRepository.findByEmail(update.email);
+      const existingUser = await this.userRepository.findByEmail(
+        update.email as string,
+      );
       if (existingUser && existingUser.id !== id) {
         throw new BadRequestException(
           `El email ${update.email} ya está registrado`,
@@ -166,8 +170,7 @@ export class UserService {
       }
     }
 
-    const updated = await this.userRepository.update(id, update);
-
+    const updated = await this.userRepository.update(id, update as object);
     this.natsClient.emit("user.updated", { id, ...update });
     this.rabbitClient.emit("user.updated", { id, ...update });
 
@@ -200,7 +203,6 @@ export class UserService {
    */
   async deleteUser(id: string) {
     const deleted = await this.userRepository.delete(id);
-
     this.natsClient.emit("user.deleted", { id });
     this.rabbitClient.emit("user.deleted", { id });
 

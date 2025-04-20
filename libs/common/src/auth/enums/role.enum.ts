@@ -5,8 +5,13 @@
  */
 
 /**
- * Roles disponibles en el sistema para asignación a usuarios
+ * @file role.enum.ts
  * @enum {string}
+ * @property {string} DEFAULT - Rol por defecto para usuarios regulares
+ * @property {string} CUSTOM - Rol personalizado para usuarios con permisos específicos
+ * @property {string} STAFF - Rol para personal interno con permisos limitados
+ * @property {string} ADMIN - Rol de administrador con todos los permisos
+ * @description Define los roles disponibles en el sistema
  */
 export enum Role {
   DEFAULT = "default",
@@ -16,10 +21,30 @@ export enum Role {
 }
 
 /**
- * Permisos granulares del sistema para control de acceso fino
+ * @file role.enum.ts
  * @enum {string}
+ * @property {string} READ_USERS - Permiso para leer información de usuarios
+ * @property {string} CREATE_USER - Permiso para crear nuevos usuarios
+ * @property {string} UPDATE_USER - Permiso para actualizar información de usuarios
+ * @property {string} DELETE_USER - Permiso para eliminar usuarios
+ * @property {string} READ_PRODUCTS - Permiso para leer información de productos
+ * @property {string} CREATE_PRODUCT - Permiso para crear nuevos productos
+ * @property {string} UPDATE_PRODUCT - Permiso para actualizar información de productos
+ * @property {string} DELETE_PRODUCT - Permiso para eliminar productos
+ * @property {string} READ_ORDERS - Permiso para leer información de órdenes
+ * @property {string} CREATE_ORDER - Permiso para crear nuevas órdenes
+ * @property {string} UPDATE_ORDER - Permiso para actualizar información de órdenes
+ * @property {string} DELETE_ORDER - Permiso para eliminar órdenes
+ * @property {string} MARK_ORDER_PAID - Permiso para marcar órdenes como pagadas
+ * @property {string} READ_PROFILE - Permiso para leer el perfil del usuario
+ * @property {string} UPDATE_PROFILE - Permiso para actualizar el perfil del usuario
+ * @property {string} MANAGE_ROLES - Permiso para gestionar roles y permisos
+ * @property {string} VIEW_METRICS - Permiso para ver métricas del sistema
+ * @property {string} MANAGE_SETTINGS - Permiso para gestionar configuraciones del sistema
+ * @description Define los permisos disponibles en el sistema
+ * @description Define los permisos específicos que pueden ser asignados a los roles
  */
-export enum Permission {
+export enum Permission{
   // Permisos para usuarios
   READ_USERS = "read:users",
   CREATE_USER = "create:user",
@@ -62,7 +87,7 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.CREATE_ORDER,
   ],
 
-  [Role.CUSTOM]: [], // Permisos personalizados asignados dinámicamente
+  [Role.CUSTOM]: [],
 
   [Role.STAFF]: [
     Permission.READ_PROFILE,
@@ -75,5 +100,5 @@ export const RolePermissions: Record<Role, Permission[]> = {
     Permission.VIEW_METRICS,
   ],
 
-  [Role.ADMIN]: Object.values(Permission), // Todos los permisos
+  [Role.ADMIN]: Object.values(Permission),
 };

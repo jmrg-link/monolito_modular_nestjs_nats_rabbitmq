@@ -43,8 +43,7 @@ export async function setupRabbitMQInfrastructure() {
   try {
     const connection = await amqplib.connect(rabbitMqConfig.url);
     const channel = await connection.createChannel();
-    for (const [ key, exchange ] of Object.entries(rabbitMqConfig.exchanges))
-    {
+    for (const [key, exchange] of Object.entries(rabbitMqConfig.exchanges)) {
       await channel.assertExchange(
         exchange.name,
         exchange.type,

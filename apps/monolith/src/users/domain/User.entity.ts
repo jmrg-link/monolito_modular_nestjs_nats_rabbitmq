@@ -35,7 +35,6 @@ import { Schema } from "mongoose";
  * @property {Date | undefined} updatedAt - Fecha de última actualización
  * @property {Date | undefined} deletedAt - Fecha de eliminación lógica
  * @property {Array<Object> | undefined} devices - Dispositivos registrados
- * @description contructor  de la entidad User con todas las propiedades opcionales
  */
 export class User implements IUserEntity {
   constructor(
