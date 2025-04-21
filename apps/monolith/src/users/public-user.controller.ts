@@ -24,10 +24,8 @@ import {
   ApiQuery,
   ApiResponse,
   ApiBody,
-  ApiBearerAuth,
 } from "@nestjs/swagger";
 import { CreateUserDto } from "./application/CreateUser.dto";
-import { Role } from "@libs/common/src/auth/enums/role.enum";
 import { IUserEntity } from "./domain";
 
 /**
@@ -130,7 +128,7 @@ export class PublicUserController {
       throw new NotFoundException(`Usuario con email ${email} no encontrado`);
     }
 
-    let passwordHash = (user as IUserEntity).passwordHash
+    let passwordHash = (user as IUserEntity).passwordHash;
     if (!passwordHash) {
       const mongoose = require("mongoose");
       const UserModel = mongoose.model("UserDocument");
@@ -197,7 +195,7 @@ export class PublicUserController {
         id: user.id,
         email: user.email,
         name: user.name,
-        passwordHash: (user as any).passwordHash,
+        passwordHash: (user as IUserEntity).passwordHash,
         roles: user.roles,
         isActive: user.isActive,
       };
@@ -247,6 +245,16 @@ export class PublicUserController {
     const existingUser = await this.userService.findByEmail(
       createUserDto.email,
     );
+    if (!existingUser) {
+      this.logger.log(
+        `El email ${createUserDto.email} no está registrado`,
+      );
+    }
+    this.logger.log({
+      message: `Verificando email ${createUserDto.email}`,
+      exists: !!existingUser,
+    })
+
     if (existingUser) {
       return {
         error: true,
@@ -254,17 +262,27 @@ export class PublicUserController {
         statusCode: 400,
       };
     }
+
+    this.logger.log(
+      `Creando usuario ${createUserDto.name} ${createUserDto.lastName} con email ${createUserDto.email}`,
+    );
+
     const user = new User(
       undefined,
+      createUserDto.password,
       createUserDto.email,
-      createUserDto.lastName,
       createUserDto.name,
-    );
+      createUserDto.lastName
+    )
 
     const created = await this.userService.createUser(
       user,
       createUserDto.password,
+      undefined
     );
+
+    this.logger.log(`Usuario registrado: ${created.email}`);
+
     return {
       code: 201,
       id: created.id,

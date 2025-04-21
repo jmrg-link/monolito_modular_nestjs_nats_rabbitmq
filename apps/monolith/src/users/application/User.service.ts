@@ -8,6 +8,7 @@ import {
 import { ClientProxy } from "@nestjs/microservices";
 import { IUserRepository } from "../infrastructure/User.repository";
 import { User } from "../domain/User.entity";
+import { Body } from '@nestjs/common';
 import {
   PaginatedResult,
   PaginationOptions,
@@ -53,6 +54,7 @@ export class UserService {
     password: string = "",
     passwordHash: string = "",
   ) {
+    this.logger.log(`Creando usuario: ${user.email, user.name, password}`);
     const existingUser = await this.userRepository.findByEmail(
       user.email as string,
     );
@@ -61,9 +63,7 @@ export class UserService {
         `El email ${user.email} ya está registrado`,
       );
     }
-
     let finalPasswordHash = passwordHash;
-
     if (!finalPasswordHash && password) {
       const bcrypt = require("bcrypt");
       finalPasswordHash = await bcrypt.hash(password, 10);
@@ -76,7 +76,12 @@ export class UserService {
     const created = await this.userRepository.create({
       ...user,
       passwordHash: finalPasswordHash,
-    } as any);
+      password: user.password,
+    } as User);
+    this.logger.log(`Usuario creado: ${created.email}`);
+    this.logger.log(`ID del usuario creado: ${created.id}`);
+    this.logger.log(`Nombre del usuario creado: ${created.name}`);
+    this.logger.log(`Roles del usuario creado: ${created.roles}`);
 
     this.publishUserCreatedEvents(created);
 

@@ -19,6 +19,7 @@ export class User implements IUserEntity {
   /**
    * @constructor
    * @param {string | undefined | Schema.Types.ObjectId} [id] - Identificador único
+   * @param {string} [password] - Contraseña en texto plano
    * @param {string} [email] - Correo electrónico
    * @param {string} [username] - Nombre de usuario
    * @param {string} [name] - Nombre completo
@@ -45,6 +46,7 @@ export class User implements IUserEntity {
    */
   constructor(
     public readonly id?: string | undefined | Schema.Types.ObjectId,
+    public readonly password?: string | undefined,
     public readonly email?: string,
     public readonly username?: string,
     public readonly name?: string,
@@ -108,6 +110,7 @@ export class User implements IUserEntity {
   public getUserObject(): IUserEntity {
     return {
       id: this.id,
+      password: this.password,
       email: this.email,
       username: this.username,
       name: this.name,

@@ -11,10 +11,15 @@ import {
   MaxLength,
   Matches,
   NotContains,
+  IsOptional,
+  IsArray,
+  IsEnum,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { ExtendsBaseUserDto } from "./ExtendsBaseUser.dto";
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { Role, Permission } from "@libs/common/src/auth/enums/role.enum";
+// import { ExtendsBaseUserDto } from "./ExtendsBaseUser.dto";
 
 /**
  * @class CreateUserDto - CreateUser.dto.ts
@@ -90,4 +95,26 @@ export class CreateUserDto {
   )
   @NotContains(" ", { message: "password no puede contener espacios" })
   password!: string;
+
+  @ApiPropertyOptional({
+    description: "Roles del usuario",
+    enum: Role,
+    isArray: true,
+    example: [Role.DEFAULT],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(Role, { each: true })
+  roles?: Role[];
+
+  @ApiPropertyOptional({
+    description: "Permisos específicos del usuario",
+    enum: Permission,
+    isArray: true,
+    example: [Permission.READ_PROFILE, Permission.UPDATE_PROFILE],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(Permission, { each: true })
+  permissions?: Permission[];
 }

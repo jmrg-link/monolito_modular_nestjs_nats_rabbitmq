@@ -14,7 +14,9 @@ import { Schema } from "mongoose";
  * @description Interface que define la estructura de un usuario en el sistema
  */
 export interface IUserEntity {
-  id?: string | undefined | Schema.Types.ObjectId;
+  id?: string | undefined | Schema.Types.ObjectId | null  | undefined;
+  password?: string;
+  lastName?: string;
   email?: string;
   username?: string;
   name?: string;
@@ -23,7 +25,6 @@ export interface IUserEntity {
   permissions?: Permission[];
   customPermissions?: string[];
   firstName?: string;
-  lastName?: string;
   emailVerified?: boolean;
   phoneNumber?: string;
   address?: {
