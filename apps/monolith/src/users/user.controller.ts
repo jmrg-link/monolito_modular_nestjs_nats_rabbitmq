@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Controlador de usuarios para la gestión administrativa
+ * @module Users/Controllers
+ * @description Implementa endpoints protegidos para operaciones CRUD y búsquedas de usuarios.
+ * Utiliza JWT y roles para autorización y DTOs para validación de datos.
+ */
 import {
   Body,
   Controller,
@@ -29,23 +35,36 @@ import {
   ApiCreate,
   ApiGetById,
   ApiDelete,
-  ApiProtected,
-  ApiAuth,
 } from "@libs/common/src/decorators";
+import { CreateUserDto } from "./application/CreateUser.dto";
+import { UpdateUserDto } from "./application/UpdateUser.dto";
+import { Role } from "@libs/common/src/auth/enums/role.enum";
+import { Address } from "./infrastructure/User.schema";
 
 /**
- * Controlador de usuarios.
- * Gestiona todas las operaciones relacionadas con los usuarios del sistema.
+ * Controlador para gestionar operaciones de usuarios con autorización por roles
+ * @class UserController
+ * @public
  */
 @ApiTags("Usuarios")
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth("access-token")
 export class UserController {
+  /**
+   * @constructor
+   * @param {UserService} userService - Servicio de usuarios para lógica de negocio
+   */
   constructor(private readonly userService: UserService) {}
 
   /**
-   * Obtiene todos los usuarios con paginación.
+   * @public
+   * @param {number} page - Número de página
+   * @param {number} limit - Límite de resultados por página
+   * @param {string} [sortBy] - Campo por el cual ordenar
+   * @param {"asc" | "desc"} [sortDirection] - Dirección del ordenamiento
+   * @returns {Promise<PaginatedResult<User>>} Resultado paginado de usuarios
+   * @description Obtiene todos los usuarios con paginación con los siguientes paramametros : page , limit, sortBy, sortDirection.
    */
   @Get()
   @Roles("admin")
@@ -122,7 +141,10 @@ export class UserController {
   }
 
   /**
-   * Obtiene un usuario por ID.
+   * Obtiene un usuario por su ID
+   * @public
+   * @param {string} id - Identificador único del usuario
+   * @returns {Promise<User>} Usuario encontrado
    */
   @Get(":id")
   @Roles("admin")
@@ -169,7 +191,10 @@ export class UserController {
   }
 
   /**
-   * Crea un usuario y publica eventos.
+   * Crea un nuevo usuario
+   * @public
+   * @param {CreateUserDto} createUserDto - Datos del usuario a crear
+   * @returns {Promise<User>} Usuario creado
    */
   @Post()
   @Roles("admin")
@@ -178,22 +203,7 @@ export class UserController {
     "Crear nuevo usuario",
     "Registra un nuevo usuario en el sistema con los roles especificados",
   )
-  @ApiBody({
-    schema: {
-      type: "object",
-      required: ["email", "name", "password"],
-      properties: {
-        email: { type: "string", example: "nuevo@ejemplo.com" },
-        name: { type: "string", example: "Ana López" },
-        password: { type: "string", example: "Contraseña123" },
-        roles: {
-          type: "array",
-          items: { type: "string" },
-          example: ["user"],
-        },
-      },
-    },
-  })
+  @ApiBody({ type: CreateUserDto })
   @ApiResponse({
     status: 201,
     description: "Usuario creado exitosamente",
@@ -202,7 +212,8 @@ export class UserController {
       properties: {
         id: { type: "string", example: "645f5678defgh9012345678" },
         email: { type: "string", example: "nuevo@ejemplo.com" },
-        name: { type: "string", example: "Ana López" },
+        name: { type: "string", example: "Ana" },
+        lastname: {type: "string", example: "López"},
         roles: {
           type: "array",
           items: { type: "string" },
@@ -222,26 +233,22 @@ export class UserController {
       },
     },
   })
-  async create(
-    @Body()
-    body: {
-      email: string;
-      name: string;
-      password: string;
-      roles?: string[];
-    },
-  ) {
+  async create(@Body() createUserDto: CreateUserDto) {
     const user = new User(
-      Date.now().toString(),
-      body.email,
-      body.name,
-      Array.isArray(body.roles) ? body.roles : ["user"],
+      createUserDto.name,
+      createUserDto.lastName,
+      createUserDto.email,
+      undefined
     );
-    return this.userService.createUser(user, body.password);
+    return this.userService.createUser(user, createUserDto.password);
   }
 
   /**
-   * Actualiza un usuario.
+   * Actualiza un usuario existente
+   * @public
+   * @param {string} id - Identificador único del usuario
+   * @param {UpdateUserDto} updateUserDto - Datos a actualizar
+   * @returns {Promise<User>} Usuario actualizado
    */
   @Put(":id")
   @Roles("admin")
@@ -256,21 +263,7 @@ export class UserController {
     type: String,
     example: "645a1234abcde1234567890",
   })
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: {
-        name: { type: "string", example: "Juan Carlos Pérez" },
-        email: { type: "string", example: "juanperez@ejemplo.com" },
-        roles: {
-          type: "array",
-          items: { type: "string" },
-          example: ["user", "staff"],
-        },
-        isActive: { type: "boolean", example: true },
-      },
-    },
-  })
+  @ApiBody({ type: UpdateUserDto })
   @ApiResponse({
     status: 200,
     description: "Usuario actualizado correctamente",
@@ -295,21 +288,15 @@ export class UserController {
     },
   })
   @ApiResponse({ status: 404, description: "Usuario no encontrado" })
-  async update(
-    @Param("id") id: string,
-    @Body()
-    body: Partial<{
-      name: string;
-      email: string;
-      roles: string[];
-      isActive: boolean;
-    }>,
-  ) {
-    return this.userService.updateUser(id, body);
+  async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateUser(id, updateUserDto);
   }
 
   /**
-   * Elimina un usuario.
+   * Elimina un usuario
+   * @public
+   * @param {string} id - Identificador único del usuario
+   * @returns {Promise<void>} Resultado de la operación
    */
   @Delete(":id")
   @Roles("admin")
@@ -323,7 +310,10 @@ export class UserController {
   }
 
   /**
-   * Desactiva un usuario.
+   * Desactiva un usuario
+   * @public
+   * @param {string} id - Identificador único del usuario
+   * @returns {Promise<object>} Usuario desactivado con mensaje de confirmación
    */
   @Put(":id/deactivate")
   @Roles("admin")
@@ -360,7 +350,10 @@ export class UserController {
   }
 
   /**
-   * Activa un usuario.
+   * Activa un usuario
+   * @public
+   * @param {string} id - Identificador único del usuario
+   * @returns {Promise<object>} Usuario activado con mensaje de confirmación
    */
   @Put(":id/activate")
   @Roles("admin")
@@ -394,7 +387,10 @@ export class UserController {
   }
 
   /**
-   * Busca usuarios por nombre o email.
+   * Busca usuarios por término
+   * @public
+   * @param {string} term - Término de búsqueda
+   * @returns {Promise<User[]>} Lista de usuarios que coinciden con el término
    */
   @Get("search/term")
   @Roles("admin")
@@ -436,7 +432,10 @@ export class UserController {
   }
 
   /**
-   * Obtiene usuarios por rol.
+   * Obtiene usuarios por rol
+   * @public
+   * @param {string} role - Rol a buscar
+   * @returns {Promise<User[]>} Lista de usuarios con el rol especificado
    */
   @Get("role/:role")
   @Roles("admin")

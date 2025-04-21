@@ -44,7 +44,7 @@ export enum Role {
  * @description Define los permisos disponibles en el sistema
  * @description Define los permisos específicos que pueden ser asignados a los roles
  */
-export enum Permission{
+export enum Permission {
   // Permisos para usuarios
   READ_USERS = "read:users",
   CREATE_USER = "create:user",

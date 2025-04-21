@@ -12,9 +12,6 @@ import {
 } from "@libs/common/src/auth/enums/role.enum";
 import { randomUUID } from "crypto";
 
-
-
-
 /**
  * @class public {string} Address
  * @property {string & { required: true, trim: true }} street - Calle de la dirección
@@ -480,5 +477,5 @@ UserSchema.pre("save", function (next) {
     this.username = this.email.split("@")[0];
   }
 
-    next();
+  next();
 });

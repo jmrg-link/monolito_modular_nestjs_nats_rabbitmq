@@ -24,7 +24,8 @@ import { ExtendsBaseUserDto } from "./ExtendsBaseUser.dto";
  * define validaciones específicas para name, lastName, email y password,
  * hereda propiedades opcionales de ExtendsBaseUserDto para mantener consistencia.
  */
-export class CreateUserDto extends ExtendsBaseUserDto {
+export class CreateUserDto {
+
   @ApiProperty({
     description: "Nombre completo del usuario",
     example: "John Doe",

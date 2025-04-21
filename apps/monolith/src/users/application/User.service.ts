@@ -254,16 +254,14 @@ export class UserService {
   }
 
   /**
-   * Actualiza la fecha del último inicio de sesión de un usuario
    * @param id ID del usuario
    * @param timestamp Fecha y hora del inicio de sesión
    * @returns Usuario actualizado o null si no se encuentra
+   * @description Actualiza la fecha del último inicio de sesión de un usuario.
    */
   async updateLastLoginTimestamp(id: string, timestamp: Date) {
     try {
       this.logger.log(`Actualizando timestamp de login para usuario ID: ${id}`);
-
-      // Actualizamos a través del repositorio
       const updated = await this.userRepository.updateLastLoginTimestamp(
         id,
         timestamp,

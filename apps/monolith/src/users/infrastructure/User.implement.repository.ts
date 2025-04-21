@@ -37,7 +37,8 @@ import { IUserRepository } from "./User.repository";
 @Injectable()
 export class MongoUserRepository
   extends BaseMongoRepository<User, UserDocument>
-  implements IUserRepository<UserDocument>{
+  implements IUserRepository<UserDocument>
+{
   private readonly logger = new Logger(MongoUserRepository.name);
 
   /**
@@ -74,13 +75,15 @@ export class MongoUserRepository
       lastName: document.lastName,
       emailVerified: document.emailVerified || false,
       phoneNumber: document.phoneNumber,
-      address: document.address ? {
-        street: document.address.street,
-        city: document.address.city,
-        state: document.address.state,
-        postalCode: document.address.postalCode,
-        country: document.address.country,
-      } : undefined,
+      address: document.address
+        ? {
+            street: document.address.street,
+            city: document.address.city,
+            state: document.address.state,
+            postalCode: document.address.postalCode,
+            country: document.address.country,
+          }
+        : undefined,
       avatarUrl: document.avatarUrl,
       lastLoginAt: document.lastLoginAt,
       preferences: {
@@ -95,20 +98,23 @@ export class MongoUserRepository
       },
       securitySettings: {
         mfaEnabled: document.securitySettings?.mfaEnabled ?? false,
-        loginNotifications: document.securitySettings?.loginNotifications ?? true,
-        passwordChangeRequired: document.securitySettings?.passwordChangeRequired ?? false,
+        loginNotifications:
+          document.securitySettings?.loginNotifications ?? true,
+        passwordChangeRequired:
+          document.securitySettings?.passwordChangeRequired ?? false,
         passwordExpiresAt: document.securitySettings?.passwordExpiresAt || null,
         securityQuestions: document.securitySettings?.securityQuestions || [],
       },
       passwordChangedAt: document.passwordChangedAt,
       birthDate: document.birthDate,
       deletedAt: document.deletedAt,
-      devices: document.devices?.map((device) => ({
-        deviceId: device.deviceId,
-        platform: device.platform,
-        lastLoginAt: device.lastLoginAt,
-        isTrusted: device.isTrusted || false,
-      })) || [],
+      devices:
+        document.devices?.map((device) => ({
+          deviceId: device.deviceId,
+          platform: device.platform,
+          lastLoginAt: device.lastLoginAt,
+          isTrusted: device.isTrusted || false,
+        })) || [],
     };
 
     return new User(
