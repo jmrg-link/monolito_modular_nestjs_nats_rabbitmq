@@ -130,7 +130,7 @@ export class PublicUserController {
       throw new NotFoundException(`Usuario con email ${email} no encontrado`);
     }
 
-    let passwordHash = (user as IUserEntity).passwordHash;
+    let passwordHash = (user as IUserEntity).passwordHash
     if (!passwordHash) {
       const mongoose = require("mongoose");
       const UserModel = mongoose.model("UserDocument");

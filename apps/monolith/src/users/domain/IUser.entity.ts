@@ -67,4 +67,5 @@ export interface IUserEntity {
     lastLoginAt: Date;
     isTrusted: boolean;
   }>;
+  passwordHash?: string;
 }

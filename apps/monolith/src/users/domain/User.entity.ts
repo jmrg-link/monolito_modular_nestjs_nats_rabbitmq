@@ -41,6 +41,7 @@ export class User implements IUserEntity {
    * @param {Date} [updatedAt] - Fecha de actualización
    * @param {Date} [deletedAt] - Fecha de eliminación lógica
    * @param {Array<Object>} [devices] - Dispositivos registrados
+   * @param {string}[passwordHash] - Hash de la contraseña
    */
   constructor(
     public readonly id?: string | undefined | Schema.Types.ObjectId,
@@ -96,6 +97,7 @@ export class User implements IUserEntity {
       lastLoginAt: Date;
       isTrusted: boolean;
     }>,
+    public readonly passwordHash?: string,
   ) {}
 
   /**
@@ -128,6 +130,7 @@ export class User implements IUserEntity {
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,
       devices: this.devices,
+      passwordHash: this.passwordHash,
     };
   }
 
