@@ -213,7 +213,7 @@ export class UserController {
         id: { type: "string", example: "645f5678defgh9012345678" },
         email: { type: "string", example: "nuevo@ejemplo.com" },
         name: { type: "string", example: "Ana" },
-        lastname: {type: "string", example: "López"},
+        lastname: { type: "string", example: "López" },
         roles: {
           type: "array",
           items: { type: "string" },
@@ -238,7 +238,7 @@ export class UserController {
       createUserDto.name,
       createUserDto.lastName,
       createUserDto.email,
-      undefined
+      undefined,
     );
     return this.userService.createUser(user, createUserDto.password);
   }
@@ -293,10 +293,10 @@ export class UserController {
   }
 
   /**
-   * Elimina un usuario
    * @public
    * @param {string} id - Identificador único del usuario
    * @returns {Promise<void>} Resultado de la operación
+   * @description Elimina un usuario del sistema
    */
   @Delete(":id")
   @Roles("admin")

@@ -25,7 +25,6 @@ import { ExtendsBaseUserDto } from "./ExtendsBaseUser.dto";
  * hereda propiedades opcionales de ExtendsBaseUserDto para mantener consistencia.
  */
 export class CreateUserDto {
-
   @ApiProperty({
     description: "Nombre completo del usuario",
     example: "John Doe",

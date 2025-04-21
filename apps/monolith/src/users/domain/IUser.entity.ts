@@ -98,6 +98,7 @@ export interface IUserEntity {
    * @property {boolean} notifications.email - Notificaciones por correo
    * @property {boolean} notifications.sms - Notificaciones por SMS
    * @property {boolean} notifications.marketing - Notificaciones de marketing
+   * @property {boolean} notifications.push - Notificaciones push
    */
   preferences?: {
     language: string;
@@ -107,6 +108,7 @@ export interface IUserEntity {
       email: boolean;
       sms: boolean;
       marketing: boolean;
+      push: boolean;
     };
   };
 
@@ -131,6 +133,7 @@ export interface IUserEntity {
     }>;
   };
 
+  passwordHash?: string;
   passwordChangedAt?: Date;
   birthDate?: Date;
   createdAt?: Date;

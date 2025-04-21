@@ -29,6 +29,14 @@ import { Schema } from "mongoose";
  * @property {Date | undefined} lastLoginAt - Fecha y hora del último inicio de sesión
  * @property {Object | undefined} preferences - Preferencias configurables del usuario
  * @property {Object | undefined} securitySettings - Configuración de seguridad
+ * @property {string | undefined} passwordHash - Hash de la contraseña
+ * @property {boolean | undefined} securitySettings.mfaEnabled - Estado de autenticación de dos factores
+ * @property {boolean | undefined} securitySettings.loginNotifications - Notificaciones de inicio de sesión
+ * @property {boolean | undefined} securitySettings.passwordChangeRequired - Cambio de contraseña requerido
+ * @property {Date | null} securitySettings.passwordExpiresAt - Fecha de expiración de la contraseña
+ * @property {Array<Object>} securityQuestions - Preguntas de seguridad para recuperación
+ * @property {string} securityQuestions[].question - Pregunta de seguridad
+ * @property {string} securityQuestions[].answerHash - Hash de la respuesta
  * @property {Date | undefined} passwordChangedAt - Fecha del último cambio de contraseña
  * @property {Date | undefined} birthDate - Fecha de nacimiento
  * @property {Date | undefined} createdAt - Fecha de creación de la cuenta
@@ -79,6 +87,7 @@ export class User implements IUserEntity {
         answerHash: string;
       }>;
     },
+    public readonly passwordHash?: string,
     public readonly passwordChangedAt?: Date,
     public readonly birthDate?: Date,
     public readonly createdAt?: Date,
@@ -115,8 +124,29 @@ export class User implements IUserEntity {
       address: this.address,
       avatarUrl: this.avatarUrl,
       lastLoginAt: this.lastLoginAt,
-      preferences: this.preferences,
-      securitySettings: this.securitySettings,
+      preferences: this.preferences
+        ? {
+            language: this.preferences.language || "es",
+            currency: this.preferences.currency || "EUR",
+            timezone: this.preferences.timezone || "UTC",
+            notifications: {
+              email: this.preferences.notifications?.email || false,
+              sms: this.preferences.notifications?.sms || false,
+              marketing: this.preferences.notifications?.marketing || false,
+            },
+          }
+        : undefined,
+      securitySettings: this.securitySettings
+        ? {
+            mfaEnabled: this.securitySettings?.mfaEnabled,
+            loginNotifications: this.securitySettings?.loginNotifications,
+            passwordChangeRequired:
+              this.securitySettings?.passwordChangeRequired,
+            passwordExpiresAt: this.securitySettings?.passwordExpiresAt,
+            securityQuestions: this.securitySettings?.securityQuestions,
+          }
+        : undefined,
+      passwordHash: this.passwordHash,
       passwordChangedAt: this.passwordChangedAt,
       birthDate: this.birthDate,
       createdAt: this.createdAt,

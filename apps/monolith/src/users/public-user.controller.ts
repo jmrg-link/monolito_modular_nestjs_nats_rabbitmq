@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Controlador público de usuarios para operaciones sin autenticación
+ * @module Users/Controllers
+ * @description Implementa endpoints públicos para registro, verificación de email y cambios de contraseña.
+ * Utiliza DTOs para validación de entrada y mantiene principios SOLID.
+ */
 import {
   Controller,
   Get,
@@ -7,6 +13,7 @@ import {
   Param,
   NotFoundException,
   UnauthorizedException,
+  Logger,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { UserService } from "./application/User.service";
@@ -17,17 +24,33 @@ import {
   ApiQuery,
   ApiResponse,
   ApiBody,
+  ApiBearerAuth,
 } from "@nestjs/swagger";
+import { CreateUserDto } from "./application/CreateUser.dto";
+import { Role } from "@libs/common/src/auth/enums/role.enum";
+import { IUserEntity } from "./domain";
 
+/**
+ * @class PublicUserController
+ * @public
+ * @description Controlador para endpoints públicos de usuarios sin requerir autenticación
+ */
 @ApiTags("Validación de Usuarios")
 @Controller("public/users")
 export class PublicUserController {
+  private readonly logger = new Logger(PublicUserController.name);
+
+  /**
+   * @constructor
+   * @param {UserService} userService - Servicio de usuarios para lógica de negocio
+   */
   constructor(private readonly userService: UserService) {}
 
   /**
    * Verifica si un email ya está registrado
-   * @param email - Email a verificar
-   * @returns Objeto indicando si el email existe y mensaje descriptivo
+   * @public
+   * @param {string} email - Email a verificar
+   * @returns {Promise<object>} Objeto indicando si el email existe y mensaje descriptivo
    */
   @Get("check-email")
   @ApiOperation({
@@ -63,10 +86,11 @@ export class PublicUserController {
   }
 
   /**
-   * Busca un usuario por su email para autenticación
-   * @param email - Email del usuario
-   * @returns Datos del usuario incluyendo passwordHash para autenticación
-   * @throws NotFoundException - Si el usuario no existe
+   * @public
+   * @param {string} email - Email del usuario
+   * @returns {Promise<object>} Datos del usuario incluyendo passwordHash para autenticación
+   * @description Busca un usuario por su email para autenticación y devuelve sus datos si existe en la base de datos.
+   * @throws {NotFoundException} Si el usuario no existe
    */
   @Get("by-email")
   @ApiOperation({
@@ -106,9 +130,7 @@ export class PublicUserController {
       throw new NotFoundException(`Usuario con email ${email} no encontrado`);
     }
 
-    // Obtener passwordHash directamente de la base de datos si no está disponible
-    let passwordHash = (user as any).passwordHash;
-
+    let passwordHash = (user as IUserEntity).passwordHash;
     if (!passwordHash) {
       const mongoose = require("mongoose");
       const UserModel = mongoose.model("UserDocument");
@@ -121,11 +143,8 @@ export class PublicUserController {
       }
     }
 
-    // Verificar que tenemos la contraseña para el proceso de autenticación
     if (!passwordHash) {
-      this.userService.logger.warn(
-        `Usuario encontrado pero sin passwordHash: ${email}`,
-      );
+      this.logger.warn(`Usuario encontrado pero sin passwordHash: ${email}`);
     }
 
     return {
@@ -140,9 +159,10 @@ export class PublicUserController {
 
   /**
    * Obtiene un usuario por su ID
-   * @param id - ID del usuario
-   * @returns Datos completos del usuario
-   * @throws NotFoundException - Si el usuario no existe
+   * @public
+   * @param {string} id - ID del usuario
+   * @returns {Promise<object>} Datos completos del usuario
+   * @throws {NotFoundException} Si el usuario no existe
    */
   @Get(":id")
   @ApiOperation({
@@ -187,9 +207,12 @@ export class PublicUserController {
   }
 
   /**
-   * Registra un nuevo usuario en el sistema
-   * @param body - Datos para el registro del usuario
-   * @returns Usuario creado con ID real generado por MongoDB
+   * @public
+   * @decorador @POST
+   * @param {CreateUserDto} createUserDto - Datos para el registro del usuario
+   * @returns {Promise<object>} Usuario creado con ID real generado por MongoDB
+   * @description Registra un nuevo usuario en el sistema y devuelve su ID generado junto
+   * al objeto del modelo de mongodb generado correctamente
    */
   @Post("register")
   @ApiOperation({
@@ -197,22 +220,7 @@ export class PublicUserController {
     description:
       "Crea un nuevo usuario en el sistema y devuelve su ID generado por MongoDB",
   })
-  @ApiBody({
-    schema: {
-      type: "object",
-      required: ["email", "name", "password"],
-      properties: {
-        email: { type: "string", example: "nuevo@ejemplo.com" },
-        name: { type: "string", example: "Ana López" },
-        password: { type: "string", example: "Contraseña123" },
-        roles: {
-          type: "array",
-          items: { type: "string" },
-          example: ["user"],
-        },
-      },
-    },
-  })
+  @ApiBody({ type: CreateUserDto })
   @ApiResponse({
     status: 201,
     description: "Usuario creado exitosamente",
@@ -235,47 +243,49 @@ export class PublicUserController {
       },
     },
   })
-  async register(
-    @Body()
-    body: {
-      email: string;
-      name: string;
-      password: string;
-      roles?: string[];
-    },
-  ) {
-    const existingUser = await this.userService.findByEmail(body.email);
+  async register(@Body() createUserDto: CreateUserDto) {
+    const existingUser = await this.userService.findByEmail(
+      createUserDto.email,
+    );
     if (existingUser) {
       return {
         error: true,
-        message: `El email ${body.email} ya está registrado`,
+        message: `El email ${createUserDto.email} ya está registrado`,
         statusCode: 400,
       };
     }
-
     const user = new User(
-      undefined as unknown as string,
-      body.email,
-      body.name,
-      Array.isArray(body.roles) ? body.roles : ["user"],
+      undefined,
+      createUserDto.email,
+      createUserDto.lastName,
+      createUserDto.name,
     );
 
-    const created = await this.userService.createUser(user, body.password);
-
+    const created = await this.userService.createUser(
+      user,
+      createUserDto.password,
+    );
     return {
+      code: 201,
       id: created.id,
       email: created.email,
       name: created.name,
+      firstName: created.firstName,
       roles: created.roles,
       createdAt: new Date().toISOString(),
+      message: `Usuario ${created.name} ${created.firstName} registrado exitosamente`,
     };
   }
 
   /**
-   * Cambia la contraseña de un usuario sin requerir autenticación adicional
-   * @param id - ID del usuario
-   * @param body - Contraseña actual y nueva
-   * @returns Mensaje de confirmación
+   * @public
+   * @decorador @POST
+   * @param {string} id - ID del usuario
+   * @param {object} body - Contraseña actual y nueva
+   * @param {string} body.currentPassword - Contraseña actual del usuario
+   * @param {string} body.newPassword - Nueva contraseña del usuario
+   * @returns {Promise<object>} Mensaje de confirmación
+   * @description Cambia la contraseña de un usuario sin requerir autenticación adicional
    */
   @Post(":id/change-password")
   @ApiOperation({
@@ -302,10 +312,9 @@ export class PublicUserController {
   ) {
     try {
       const user = await this.userService.findById(id);
-
       const isPasswordValid = await bcrypt.compare(
         body.currentPassword,
-        (user as any).passwordHash,
+        (user as IUserEntity).passwordHash || "",
       );
 
       if (!isPasswordValid) {
