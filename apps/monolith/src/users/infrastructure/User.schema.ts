@@ -44,6 +44,7 @@ export class Address {
  * @property {boolean & { default: true }} email - Configuración de notificaciones por correo electrónico
  * @property {boolean & { default: false }} sms - Configuración de notificaciones por SMS
  * @property {boolean & { default: true }} marketing - Configuración de notificaciones de marketing
+ * @property {boolean & { default: false }} push - Configuración de notificaciones push
  * @description Clase que representa la configuración de notificaciones del usuario
  */
 @Schema({ _id: false })
@@ -56,6 +57,9 @@ export class NotificationSettings {
 
   @Prop({ default: true })
   marketing!: boolean;
+
+  @Prop({ default: false })
+  push!: boolean;
 }
 
 /**

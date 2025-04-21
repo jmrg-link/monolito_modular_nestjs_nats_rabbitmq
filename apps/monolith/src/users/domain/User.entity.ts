@@ -1,50 +1,47 @@
+/**
+ * @fileoverview Entidad User del dominio
+ * @module Users/Domain/Entity
+ * @description Modela la representación de un usuario siguiendo el patrón de entidad anémica.
+ * Proporciona transformaciones de datos mediante getUserObject() y getUserObjects().
+ * Todas las propiedades son opcionales para flexibilidad en la construcción de objetos.
+ */
 import { Permission, Role } from "@libs/common/src/auth/enums/role.enum";
 import { IUserEntity } from "./IUser.entity";
 import { Schema } from "mongoose";
 
 /**
- * Entidad User del dominio que implementa IUserEntity
- * Modela la representación de un usuario siguiendo el patrón de entidad anémica donde la lógica
- * de negocio se delega a la capa de aplicación. Proporciona transformaciones de datos mediante
- * getUserObject() para instancias individuales y getUserObjects() para colecciones.
- * Todas las propiedades son opcionales permitiendo flexibilidad en la construcción de objetos.
+ * Entidad User que implementa IUserEntity
  * @class User
  * @implements {IUserEntity}
- * @module Users/Domain/Entity
- * @description Esta clase representa la entidad de usuario en el dominio de la aplicación.
- * @property {string | undefined} id - Identificador único del usuario
- * @property {string | undefined} email - Correo electrónico del usuario
- * @property {string | undefined} username - Nombre de usuario único
- * @property {string | undefined} name - Nombre completo o de visualización
- * @property {Role[] | undefined} roles - Roles asignados al usuario
- * @property {boolean | undefined} isActive - Estado de activación de la cuenta
- * @property {Permission[] | undefined} permissions - Permisos específicos asignados
- * @property {string[] | undefined} customPermissions - Permisos personalizados no estándar
- * @property {string | undefined} firstName - Nombre de pila
- * @property {string | undefined} lastName - Apellidos
- * @property {boolean | undefined} emailVerified - Estado de verificación del email
- * @property {string | undefined} phoneNumber - Número de teléfono de contacto
- * @property {Object | undefined} address - Dirección postal completa
- * @property {string | undefined} avatarUrl - URL de la imagen de perfil
- * @property {Date | undefined} lastLoginAt - Fecha y hora del último inicio de sesión
- * @property {Object | undefined} preferences - Preferencias configurables del usuario
- * @property {Object | undefined} securitySettings - Configuración de seguridad
- * @property {string | undefined} passwordHash - Hash de la contraseña
- * @property {boolean | undefined} securitySettings.mfaEnabled - Estado de autenticación de dos factores
- * @property {boolean | undefined} securitySettings.loginNotifications - Notificaciones de inicio de sesión
- * @property {boolean | undefined} securitySettings.passwordChangeRequired - Cambio de contraseña requerido
- * @property {Date | null} securitySettings.passwordExpiresAt - Fecha de expiración de la contraseña
- * @property {Array<Object>} securityQuestions - Preguntas de seguridad para recuperación
- * @property {string} securityQuestions[].question - Pregunta de seguridad
- * @property {string} securityQuestions[].answerHash - Hash de la respuesta
- * @property {Date | undefined} passwordChangedAt - Fecha del último cambio de contraseña
- * @property {Date | undefined} birthDate - Fecha de nacimiento
- * @property {Date | undefined} createdAt - Fecha de creación de la cuenta
- * @property {Date | undefined} updatedAt - Fecha de última actualización
- * @property {Date | undefined} deletedAt - Fecha de eliminación lógica
- * @property {Array<Object> | undefined} devices - Dispositivos registrados
+ * @public
  */
 export class User implements IUserEntity {
+  /**
+   * @constructor
+   * @param {string | undefined | Schema.Types.ObjectId} [id] - Identificador único
+   * @param {string} [email] - Correo electrónico
+   * @param {string} [username] - Nombre de usuario
+   * @param {string} [name] - Nombre completo
+   * @param {Role[]} [roles] - Roles asignados
+   * @param {boolean} [isActive] - Estado de activación
+   * @param {Permission[]} [permissions] - Permisos específicos
+   * @param {string[]} [customPermissions] - Permisos personalizados
+   * @param {string} [firstName] - Nombre de pila
+   * @param {string} [lastName] - Apellidos
+   * @param {boolean} [emailVerified] - Estado de verificación del email
+   * @param {string} [phoneNumber] - Número de teléfono
+   * @param {Object} [address] - Dirección postal
+   * @param {string} [avatarUrl] - URL de la imagen de perfil
+   * @param {Date} [lastLoginAt] - Último inicio de sesión
+   * @param {Object} [preferences] - Preferencias del usuario
+   * @param {Object} [securitySettings] - Configuración de seguridad
+   * @param {Date} [passwordChangedAt] - Último cambio de contraseña
+   * @param {Date} [birthDate] - Fecha de nacimiento
+   * @param {Date} [createdAt] - Fecha de creación
+   * @param {Date} [updatedAt] - Fecha de actualización
+   * @param {Date} [deletedAt] - Fecha de eliminación lógica
+   * @param {Array<Object>} [devices] - Dispositivos registrados
+   */
   constructor(
     public readonly id?: string | undefined | Schema.Types.ObjectId,
     public readonly email?: string,
@@ -75,6 +72,7 @@ export class User implements IUserEntity {
         email: boolean;
         sms: boolean;
         marketing: boolean;
+        push: boolean;
       };
     },
     public readonly securitySettings?: {
@@ -87,7 +85,6 @@ export class User implements IUserEntity {
         answerHash: string;
       }>;
     },
-    public readonly passwordHash?: string,
     public readonly passwordChangedAt?: Date,
     public readonly birthDate?: Date,
     public readonly createdAt?: Date,
@@ -103,9 +100,8 @@ export class User implements IUserEntity {
 
   /**
    * Convierte la entidad User a un objeto plano conforme a IUserEntity
-   * @returns {IUserEntity} Representación plana de la entidad
    * @public
-   * @description Este método transforma la entidad User en un objeto getUserObject || getUserObjects.
+   * @returns {IUserEntity} Representación plana de la entidad
    */
   public getUserObject(): IUserEntity {
     return {
@@ -124,29 +120,8 @@ export class User implements IUserEntity {
       address: this.address,
       avatarUrl: this.avatarUrl,
       lastLoginAt: this.lastLoginAt,
-      preferences: this.preferences
-        ? {
-            language: this.preferences.language || "es",
-            currency: this.preferences.currency || "EUR",
-            timezone: this.preferences.timezone || "UTC",
-            notifications: {
-              email: this.preferences.notifications?.email || false,
-              sms: this.preferences.notifications?.sms || false,
-              marketing: this.preferences.notifications?.marketing || false,
-            },
-          }
-        : undefined,
-      securitySettings: this.securitySettings
-        ? {
-            mfaEnabled: this.securitySettings?.mfaEnabled,
-            loginNotifications: this.securitySettings?.loginNotifications,
-            passwordChangeRequired:
-              this.securitySettings?.passwordChangeRequired,
-            passwordExpiresAt: this.securitySettings?.passwordExpiresAt,
-            securityQuestions: this.securitySettings?.securityQuestions,
-          }
-        : undefined,
-      passwordHash: this.passwordHash,
+      preferences: this.preferences,
+      securitySettings: this.securitySettings,
       passwordChangedAt: this.passwordChangedAt,
       birthDate: this.birthDate,
       createdAt: this.createdAt,
@@ -158,9 +133,9 @@ export class User implements IUserEntity {
 
   /**
    * Convierte un array de entidades User a objetos planos
+   * @public
    * @param {User[]} users - Array de entidades User
    * @returns {IUserEntity[]} Array de representaciones planas
-   * @private
    */
   public getUserObjects(users: User[]): IUserEntity[] {
     return users.map((user) => user.getUserObject());

@@ -94,6 +94,7 @@ export class MongoUserRepository
           email: document.preferences?.notifications?.email ?? true,
           sms: document.preferences?.notifications?.sms ?? false,
           marketing: document.preferences?.notifications?.marketing ?? true,
+          push: document.preferences?.notifications?.push ?? false,
         },
       },
       securitySettings: {
